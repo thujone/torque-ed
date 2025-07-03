@@ -9,7 +9,7 @@ export const CustomLogo = () => {
       color: 'inherit',
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      TorqueEd
+      TorqueEd 0.1
     </h3>
   );
 };

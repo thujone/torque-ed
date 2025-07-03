@@ -87,6 +87,12 @@ torque-ed/
 └── package.json
 ```
 
+## Quick Links
+
+- **Admin Dashboard**: http://localhost:3030
+- **Attendance Spreadsheet**: http://localhost:3030/attendance
+- **GraphQL Playground**: http://localhost:3030/api/graphql
+
 ## Key Features
 
 ### Phase A (Current Implementation)

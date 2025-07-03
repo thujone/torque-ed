@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { PageContainer } from '@keystone-6/core/admin-ui/components';
+import { Heading } from '@keystone-ui/core';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 
 const GET_CLASSES = gql`
@@ -160,8 +162,7 @@ export default function AttendancePage() {
   if (classesLoading) return <div>Loading classes...</div>;
 
   return (
-    <div>
-      <h1>Attendance Management</h1>
+    <PageContainer header={<Heading type="h3">Attendance Management</Heading>}>
       <div style={{ padding: '24px' }}>
         <div style={{ marginBottom: '24px' }}>
           <select
@@ -309,6 +310,6 @@ export default function AttendancePage() {
           </>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

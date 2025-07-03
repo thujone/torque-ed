@@ -139,6 +139,7 @@ export const Class = list({
       initialColumns: ['course', 'section', 'instructor', 'semester', 'school'],
     },
     labelField: 'section',
+    description: '📊 To view attendance in spreadsheet format, go to: /attendance',
   },
   hooks: {
     afterOperation: {

@@ -45,6 +45,7 @@ export default withAuth(
     session,
     ui: {
       isAccessAllowed: (context) => !!context.session,
+      publicPages: ['/attendance'],
     },
     graphql: {
       playground: process.env.NODE_ENV !== 'production',

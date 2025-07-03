@@ -123,6 +123,7 @@ export const AttendanceRecord = list({
     listView: {
       initialColumns: ['enrollment', 'classMeeting', 'status', 'markedAt'],
     },
+    description: 'Individual attendance records. For a spreadsheet view, use the Attendance Spreadsheet page in the navigation menu.',
   },
   hooks: {
     resolveInput: {
