@@ -184,51 +184,112 @@ For questions or issues, contact Rich Goldman at rich@comfypants.org
 The following screenshots show the key features and interfaces of TorqueEd, organized from general administration to specific attendance tracking:
 
 ### System Administration
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Main dashboard showing system overview**
 ![Dashboard](screenshots/dashboard.png)
-*Main dashboard showing system overview*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Multi-tenant school system management**
 ![School Systems](screenshots/school-systems.png)
-*Multi-tenant school system management*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Individual school management within a system**
 ![Schools](screenshots/schools.png)
-*Individual school management within a system*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**User management with role-based access control**
 ![Users](screenshots/users.png)
-*User management with role-based access control*
+
+---
 
 ### Academic Management
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Academic term management with midterm/final periods**
 ![Semesters](screenshots/semesters.png)
-*Academic term management with midterm/final periods*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Holiday calendar management for session generation**
 ![Holidays](screenshots/holidays.png)
-*Holiday calendar management for session generation*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Course catalog management**
 ![Courses](screenshots/courses.png)
-*Course catalog management*
 
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Detailed course information and settings**
 ![Courses Detail](screenshots/courses-2.png)
-*Detailed course information and settings*
+
+---
 
 ### Class Management
-![Classes](screenshots/classes.png)
-*Class instance management with scheduling*
 
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Class instance management with scheduling**
+![Classes](screenshots/classes.png)
+
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Individual class session management with auto-generation**
 ![Class Sessions](screenshots/class-sessions.png)
-*Individual class session management with auto-generation*
+
+---
 
 ### Student Management
-![Students](screenshots/students.png)
-*Student records with QR code generation*
 
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Student records with QR code generation**
+![Students](screenshots/students.png)
+
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Class enrollment management**
 ![Enrollments](screenshots/enrollments.png)
-*Class enrollment management*
+
+---
 
 ### Attendance Tracking
-![Attendance Records](screenshots/attendance-records.png)
-*Individual attendance record management*
 
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Individual attendance record management**
+![Attendance Records](screenshots/attendance-records.png)
+
+---
+
+**═══════════════════════════════════════════════════════════════════════════════════════**
+
+**Comprehensive attendance spreadsheet with clock-in/clock-out tracking**
 ![Attendance Spreadsheet](screenshots/attendance-spreadsheet.png)
-*Comprehensive attendance spreadsheet with clock-in/clock-out tracking*
+
+---
 
 ## License
 

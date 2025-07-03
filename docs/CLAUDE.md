@@ -58,7 +58,12 @@ torque-ed/
 ├── docs/
 │   ├── torque-ed-prd.md         # Product requirements
 │   ├── torque-ed-tech-spec.md   # Technical specification
-│   └── CLAUDE.md                # This file
+│   ├── CLAUDE.md                # This file - AI assistant instructions
+│   ├── ARCHITECTURE.md          # System design and implementation patterns
+│   ├── DOMAIN_MODEL.md          # Business logic, rules, and terminology
+│   ├── API_SPEC.md              # Complete GraphQL/REST API documentation
+│   └── DEPLOYMENT.md            # Infrastructure and deployment procedures
+├── screenshots/                  # System interface screenshots organized hierarchically
 ├── schema/                       # KeystoneJS data models
 │   ├── SchoolSystem.ts          # School district/system management
 │   ├── School.ts                # Individual schools
