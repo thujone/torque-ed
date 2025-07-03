@@ -185,28 +185,20 @@ The following screenshots show the key features and interfaces of TorqueEd, orga
 
 ### System Administration
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Main dashboard showing system overview**
 ![Dashboard](screenshots/dashboard.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Multi-tenant school system management**
 ![School Systems](screenshots/school-systems.png)
 
 ---
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Individual school management within a system**
 ![Schools](screenshots/schools.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **User management with role-based access control**
 ![Users](screenshots/users.png)
@@ -215,28 +207,20 @@ The following screenshots show the key features and interfaces of TorqueEd, orga
 
 ### Academic Management
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Academic term management with midterm/final periods**
 ![Semesters](screenshots/semesters.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Holiday calendar management for session generation**
 ![Holidays](screenshots/holidays.png)
 
 ---
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Course catalog management**
 ![Courses](screenshots/courses.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Detailed course information and settings**
 ![Courses Detail](screenshots/courses-2.png)
@@ -245,14 +229,10 @@ The following screenshots show the key features and interfaces of TorqueEd, orga
 
 ### Class Management
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Class instance management with scheduling**
 ![Classes](screenshots/classes.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Individual class session management with auto-generation**
 ![Class Sessions](screenshots/class-sessions.png)
@@ -261,14 +241,10 @@ The following screenshots show the key features and interfaces of TorqueEd, orga
 
 ### Student Management
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Student records with QR code generation**
 ![Students](screenshots/students.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Class enrollment management**
 ![Enrollments](screenshots/enrollments.png)
@@ -277,14 +253,10 @@ The following screenshots show the key features and interfaces of TorqueEd, orga
 
 ### Attendance Tracking
 
-**═══════════════════════════════════════════════════════════════════════════════════════**
-
 **Individual attendance record management**
 ![Attendance Records](screenshots/attendance-records.png)
 
 ---
-
-**═══════════════════════════════════════════════════════════════════════════════════════**
 
 **Comprehensive attendance spreadsheet with clock-in/clock-out tracking**
 ![Attendance Spreadsheet](screenshots/attendance-spreadsheet.png)
