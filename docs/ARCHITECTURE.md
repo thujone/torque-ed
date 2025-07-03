@@ -81,26 +81,33 @@ TorqueEd is built on KeystoneJS 6, leveraging its powerful GraphQL API generatio
 
 ### Data Flow
 
-#### Attendance Marking Flow
+#### Attendance Clock-In/Clock-Out Flow
 
 ```
-QR Scanner → Keyboard Input → React Component → GraphQL Mutation → 
-Access Control Check → Database Update → UI Update → Notification Service
+QR Scanner → Smart Scanner Component → Clock-In/Out Detection → 
+GraphQL Mutation → Database Update → Duration Calculation → UI Update
 ```
 
-1. **Scanner Input**: QR scanner sends keystrokes to the browser
-2. **React Handler**: Captures input and triggers GraphQL mutation
-3. **GraphQL Layer**: Validates request and checks permissions
-4. **Database**: Updates attendance record with transaction
-5. **UI Update**: Optimistic update with error rollback
-6. **Notifications**: Async job to send notifications if needed
+1. **Scanner Input**: QR scanner sends keystrokes to AttendanceScanner component
+2. **Smart Detection**: Component checks existing records to determine clock-in vs clock-out
+3. **GraphQL Mutation**: Creates new record (clock-in) or updates existing (clock-out)
+4. **Duration Calculation**: Auto-calculated via database hooks when both times present
+5. **UI Update**: Real-time feedback showing "clocked IN" or "clocked OUT"
+6. **Manual Override**: Teachers can edit all three fields (in, out, duration) manually
 
-#### Class Meeting Generation Flow
+#### Class Session Generation Flow
 
 ```
-Create Class → Validate Schedule → Generate Meetings → 
-Check Holidays → Save to Database → Update UI
+Create Class → Validate Schedule → Generate Sessions → 
+Exclude Holidays → Mark Midterm/Final → Save to Database → Update UI
 ```
+
+1. **Class Creation**: Admin creates class with schedule pattern (MWF, TTh, etc.)
+2. **Session Generation**: `generateClassSessions()` creates all semester sessions
+3. **Holiday Exclusion**: Sessions automatically skip holiday dates
+4. **Smart Midterm/Final**: Only LAST session in each period marked as midterm/final
+5. **Field Population**: Auto-populates dayOfWeek and courseNumber for each session
+6. **Database Save**: Batch creation of all sessions with proper relationships
 
 ### Security Architecture
 

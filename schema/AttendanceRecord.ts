@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { relationship, timestamp, select, text } from '@keystone-6/core/fields';
+import { relationship, timestamp, select, text, virtual, integer } from '@keystone-6/core/fields';
 
 export const AttendanceRecord = list({
   access: {
@@ -73,10 +73,27 @@ export const AttendanceRecord = list({
       defaultValue: 'present',
       validation: { isRequired: true },
     }),
+    clockInTime: timestamp({
+      ui: {
+        description: 'When student clocked in to session',
+      },
+    }),
+    clockOutTime: timestamp({
+      ui: {
+        description: 'When student clocked out of session',
+      },
+    }),
+    sessionDuration: integer({
+      ui: {
+        description: 'Session duration in minutes (auto-calculated)',
+        createView: { fieldMode: 'hidden' },
+        itemView: { fieldMode: 'read' },
+      },
+    }),
     markedAt: timestamp({
       defaultValue: { kind: 'now' },
       ui: {
-        description: 'When attendance was marked',
+        description: 'When attendance was first marked',
       },
     }),
     notes: text({
@@ -94,8 +111,8 @@ export const AttendanceRecord = list({
         // Note: We'll need to create a custom label for this
       },
     }),
-    classMeeting: relationship({ 
-      ref: 'ClassMeeting.attendanceRecords',
+    classSession: relationship({ 
+      ref: 'ClassSession.attendanceRecords',
       ui: {
         displayMode: 'select',
         labelField: 'scheduledDate',
@@ -121,7 +138,7 @@ export const AttendanceRecord = list({
   },
   ui: {
     listView: {
-      initialColumns: ['enrollment', 'classMeeting', 'status', 'markedAt'],
+      initialColumns: ['enrollment', 'classSession', 'status', 'clockInTime', 'clockOutTime', 'sessionDuration'],
     },
     description: 'Individual attendance records. For a spreadsheet view, use the Attendance Spreadsheet page in the navigation menu.',
   },
@@ -132,6 +149,29 @@ export const AttendanceRecord = list({
         if (context.session?.data?.id && !resolvedData.markedBy) {
           resolvedData.markedBy = { connect: { id: context.session.data.id } };
         }
+        
+        // Calculate session duration if both clock times are provided
+        if (resolvedData.clockInTime && resolvedData.clockOutTime) {
+          const clockIn = new Date(resolvedData.clockInTime);
+          const clockOut = new Date(resolvedData.clockOutTime);
+          const durationMs = clockOut.getTime() - clockIn.getTime();
+          resolvedData.sessionDuration = Math.round(durationMs / (1000 * 60)); // Convert to minutes
+        }
+        
+        return resolvedData;
+      },
+      update: ({ resolvedData }) => {
+        // Recalculate session duration if clock times change
+        if (resolvedData.clockInTime && resolvedData.clockOutTime) {
+          const clockIn = new Date(resolvedData.clockInTime);
+          const clockOut = new Date(resolvedData.clockOutTime);
+          const durationMs = clockOut.getTime() - clockIn.getTime();
+          resolvedData.sessionDuration = Math.round(durationMs / (1000 * 60)); // Convert to minutes
+        } else if (resolvedData.clockInTime === null || resolvedData.clockOutTime === null) {
+          // Clear duration if either time is removed
+          resolvedData.sessionDuration = null;
+        }
+        
         return resolvedData;
       },
     },

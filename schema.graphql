@@ -708,8 +708,8 @@ type Class {
   teachingAssistantsCount(where: UserWhereInput! = {}): Int
   enrollments(where: EnrollmentWhereInput! = {}, orderBy: [EnrollmentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: EnrollmentWhereUniqueInput): [Enrollment!]
   enrollmentsCount(where: EnrollmentWhereInput! = {}): Int
-  meetings(where: ClassMeetingWhereInput! = {}, orderBy: [ClassMeetingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ClassMeetingWhereUniqueInput): [ClassMeeting!]
-  meetingsCount(where: ClassMeetingWhereInput! = {}): Int
+  sessions(where: ClassSessionWhereInput! = {}, orderBy: [ClassSessionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ClassSessionWhereUniqueInput): [ClassSession!]
+  sessionsCount(where: ClassSessionWhereInput! = {}): Int
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -733,7 +733,7 @@ input ClassWhereInput {
   instructor: UserWhereInput
   teachingAssistants: UserManyRelationFilter
   enrollments: EnrollmentManyRelationFilter
-  meetings: ClassMeetingManyRelationFilter
+  sessions: ClassSessionManyRelationFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
 }
@@ -755,10 +755,10 @@ input EnrollmentManyRelationFilter {
   none: EnrollmentWhereInput
 }
 
-input ClassMeetingManyRelationFilter {
-  every: ClassMeetingWhereInput
-  some: ClassMeetingWhereInput
-  none: ClassMeetingWhereInput
+input ClassSessionManyRelationFilter {
+  every: ClassSessionWhereInput
+  some: ClassSessionWhereInput
+  none: ClassSessionWhereInput
 }
 
 input ClassOrderByInput {
@@ -783,7 +783,7 @@ input ClassUpdateInput {
   instructor: UserRelateToOneForUpdateInput
   teachingAssistants: UserRelateToManyForUpdateInput
   enrollments: EnrollmentRelateToManyForUpdateInput
-  meetings: ClassMeetingRelateToManyForUpdateInput
+  sessions: ClassSessionRelateToManyForUpdateInput
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -813,11 +813,11 @@ input EnrollmentRelateToManyForUpdateInput {
   connect: [EnrollmentWhereUniqueInput!]
 }
 
-input ClassMeetingRelateToManyForUpdateInput {
-  disconnect: [ClassMeetingWhereUniqueInput!]
-  set: [ClassMeetingWhereUniqueInput!]
-  create: [ClassMeetingCreateInput!]
-  connect: [ClassMeetingWhereUniqueInput!]
+input ClassSessionRelateToManyForUpdateInput {
+  disconnect: [ClassSessionWhereUniqueInput!]
+  set: [ClassSessionWhereUniqueInput!]
+  create: [ClassSessionCreateInput!]
+  connect: [ClassSessionWhereUniqueInput!]
 }
 
 input ClassUpdateArgs {
@@ -837,7 +837,7 @@ input ClassCreateInput {
   instructor: UserRelateToOneForCreateInput
   teachingAssistants: UserRelateToManyForCreateInput
   enrollments: EnrollmentRelateToManyForCreateInput
-  meetings: ClassMeetingRelateToManyForCreateInput
+  sessions: ClassSessionRelateToManyForCreateInput
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -862,9 +862,9 @@ input EnrollmentRelateToManyForCreateInput {
   connect: [EnrollmentWhereUniqueInput!]
 }
 
-input ClassMeetingRelateToManyForCreateInput {
-  create: [ClassMeetingCreateInput!]
-  connect: [ClassMeetingWhereUniqueInput!]
+input ClassSessionRelateToManyForCreateInput {
+  create: [ClassSessionCreateInput!]
+  connect: [ClassSessionWhereUniqueInput!]
 }
 
 type Student {
@@ -1080,13 +1080,16 @@ input AttendanceRecordRelateToManyForCreateInput {
   connect: [AttendanceRecordWhereUniqueInput!]
 }
 
-type ClassMeeting {
+type ClassSession {
   id: ID!
   scheduledDate: CalendarDay
+  dayOfWeek: String
+  courseNumber: String
   scheduledStartTime: String
   scheduledEndTime: String
   actualDate: CalendarDay
-  status: ClassMeetingStatusType
+  sessionType: ClassSessionSessionTypeType
+  status: ClassSessionStatusType
   isMidterm: Boolean
   isFinal: Boolean
   room: String
@@ -1097,26 +1100,36 @@ type ClassMeeting {
   updatedAt: DateTime
 }
 
-enum ClassMeetingStatusType {
+enum ClassSessionSessionTypeType {
+  regular
+  midterm
+  final
+  lab
+}
+
+enum ClassSessionStatusType {
   scheduled
   completed
   cancelled
 }
 
-input ClassMeetingWhereUniqueInput {
+input ClassSessionWhereUniqueInput {
   id: ID
 }
 
-input ClassMeetingWhereInput {
-  AND: [ClassMeetingWhereInput!]
-  OR: [ClassMeetingWhereInput!]
-  NOT: [ClassMeetingWhereInput!]
+input ClassSessionWhereInput {
+  AND: [ClassSessionWhereInput!]
+  OR: [ClassSessionWhereInput!]
+  NOT: [ClassSessionWhereInput!]
   id: IDFilter
   scheduledDate: CalendarDayFilter
+  dayOfWeek: StringFilter
+  courseNumber: StringFilter
   scheduledStartTime: StringFilter
   scheduledEndTime: StringFilter
   actualDate: CalendarDayNullableFilter
-  status: ClassMeetingStatusTypeNullableFilter
+  sessionType: ClassSessionSessionTypeTypeNullableFilter
+  status: ClassSessionStatusTypeNullableFilter
   isMidterm: BooleanFilter
   isFinal: BooleanFilter
   room: StringFilter
@@ -1126,11 +1139,18 @@ input ClassMeetingWhereInput {
   updatedAt: DateTimeNullableFilter
 }
 
-input ClassMeetingStatusTypeNullableFilter {
-  equals: ClassMeetingStatusType
-  in: [ClassMeetingStatusType!]
-  notIn: [ClassMeetingStatusType!]
-  not: ClassMeetingStatusTypeNullableFilter
+input ClassSessionSessionTypeTypeNullableFilter {
+  equals: ClassSessionSessionTypeType
+  in: [ClassSessionSessionTypeType!]
+  notIn: [ClassSessionSessionTypeType!]
+  not: ClassSessionSessionTypeTypeNullableFilter
+}
+
+input ClassSessionStatusTypeNullableFilter {
+  equals: ClassSessionStatusType
+  in: [ClassSessionStatusType!]
+  notIn: [ClassSessionStatusType!]
+  not: ClassSessionStatusTypeNullableFilter
 }
 
 input BooleanFilter {
@@ -1138,12 +1158,15 @@ input BooleanFilter {
   not: BooleanFilter
 }
 
-input ClassMeetingOrderByInput {
+input ClassSessionOrderByInput {
   id: OrderDirection
   scheduledDate: OrderDirection
+  dayOfWeek: OrderDirection
+  courseNumber: OrderDirection
   scheduledStartTime: OrderDirection
   scheduledEndTime: OrderDirection
   actualDate: OrderDirection
+  sessionType: OrderDirection
   status: OrderDirection
   isMidterm: OrderDirection
   isFinal: OrderDirection
@@ -1152,12 +1175,15 @@ input ClassMeetingOrderByInput {
   updatedAt: OrderDirection
 }
 
-input ClassMeetingUpdateInput {
+input ClassSessionUpdateInput {
   scheduledDate: CalendarDay
+  dayOfWeek: String
+  courseNumber: String
   scheduledStartTime: String
   scheduledEndTime: String
   actualDate: CalendarDay
-  status: ClassMeetingStatusType
+  sessionType: ClassSessionSessionTypeType
+  status: ClassSessionStatusType
   isMidterm: Boolean
   isFinal: Boolean
   room: String
@@ -1167,17 +1193,20 @@ input ClassMeetingUpdateInput {
   updatedAt: DateTime
 }
 
-input ClassMeetingUpdateArgs {
-  where: ClassMeetingWhereUniqueInput!
-  data: ClassMeetingUpdateInput!
+input ClassSessionUpdateArgs {
+  where: ClassSessionWhereUniqueInput!
+  data: ClassSessionUpdateInput!
 }
 
-input ClassMeetingCreateInput {
+input ClassSessionCreateInput {
   scheduledDate: CalendarDay
+  dayOfWeek: String
+  courseNumber: String
   scheduledStartTime: String
   scheduledEndTime: String
   actualDate: CalendarDay
-  status: ClassMeetingStatusType
+  sessionType: ClassSessionSessionTypeType
+  status: ClassSessionStatusType
   isMidterm: Boolean
   isFinal: Boolean
   room: String
@@ -1190,10 +1219,13 @@ input ClassMeetingCreateInput {
 type AttendanceRecord {
   id: ID!
   status: AttendanceRecordStatusType
+  clockInTime: DateTime
+  clockOutTime: DateTime
+  sessionDuration: Int
   markedAt: DateTime
   notes: String
   enrollment: Enrollment
-  classMeeting: ClassMeeting
+  classSession: ClassSession
   markedBy: User
   createdAt: DateTime
   updatedAt: DateTime
@@ -1215,10 +1247,13 @@ input AttendanceRecordWhereInput {
   NOT: [AttendanceRecordWhereInput!]
   id: IDFilter
   status: AttendanceRecordStatusTypeNullableFilter
+  clockInTime: DateTimeNullableFilter
+  clockOutTime: DateTimeNullableFilter
+  sessionDuration: IntNullableFilter
   markedAt: DateTimeNullableFilter
   notes: StringFilter
   enrollment: EnrollmentWhereInput
-  classMeeting: ClassMeetingWhereInput
+  classSession: ClassSessionWhereInput
   markedBy: UserWhereInput
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
@@ -1234,6 +1269,9 @@ input AttendanceRecordStatusTypeNullableFilter {
 input AttendanceRecordOrderByInput {
   id: OrderDirection
   status: OrderDirection
+  clockInTime: OrderDirection
+  clockOutTime: OrderDirection
+  sessionDuration: OrderDirection
   markedAt: OrderDirection
   notes: OrderDirection
   createdAt: OrderDirection
@@ -1242,10 +1280,13 @@ input AttendanceRecordOrderByInput {
 
 input AttendanceRecordUpdateInput {
   status: AttendanceRecordStatusType
+  clockInTime: DateTime
+  clockOutTime: DateTime
+  sessionDuration: Int
   markedAt: DateTime
   notes: String
   enrollment: EnrollmentRelateToOneForUpdateInput
-  classMeeting: ClassMeetingRelateToOneForUpdateInput
+  classSession: ClassSessionRelateToOneForUpdateInput
   markedBy: UserRelateToOneForUpdateInput
   createdAt: DateTime
   updatedAt: DateTime
@@ -1257,9 +1298,9 @@ input EnrollmentRelateToOneForUpdateInput {
   disconnect: Boolean
 }
 
-input ClassMeetingRelateToOneForUpdateInput {
-  create: ClassMeetingCreateInput
-  connect: ClassMeetingWhereUniqueInput
+input ClassSessionRelateToOneForUpdateInput {
+  create: ClassSessionCreateInput
+  connect: ClassSessionWhereUniqueInput
   disconnect: Boolean
 }
 
@@ -1270,10 +1311,13 @@ input AttendanceRecordUpdateArgs {
 
 input AttendanceRecordCreateInput {
   status: AttendanceRecordStatusType
+  clockInTime: DateTime
+  clockOutTime: DateTime
+  sessionDuration: Int
   markedAt: DateTime
   notes: String
   enrollment: EnrollmentRelateToOneForCreateInput
-  classMeeting: ClassMeetingRelateToOneForCreateInput
+  classSession: ClassSessionRelateToOneForCreateInput
   markedBy: UserRelateToOneForCreateInput
   createdAt: DateTime
   updatedAt: DateTime
@@ -1284,9 +1328,9 @@ input EnrollmentRelateToOneForCreateInput {
   connect: EnrollmentWhereUniqueInput
 }
 
-input ClassMeetingRelateToOneForCreateInput {
-  create: ClassMeetingCreateInput
-  connect: ClassMeetingWhereUniqueInput
+input ClassSessionRelateToOneForCreateInput {
+  create: ClassSessionCreateInput
+  connect: ClassSessionWhereUniqueInput
 }
 
 """
@@ -1349,12 +1393,12 @@ type Mutation {
   updateEnrollments(data: [EnrollmentUpdateArgs!]!): [Enrollment]
   deleteEnrollment(where: EnrollmentWhereUniqueInput!): Enrollment
   deleteEnrollments(where: [EnrollmentWhereUniqueInput!]!): [Enrollment]
-  createClassMeeting(data: ClassMeetingCreateInput!): ClassMeeting
-  createClassMeetings(data: [ClassMeetingCreateInput!]!): [ClassMeeting]
-  updateClassMeeting(where: ClassMeetingWhereUniqueInput!, data: ClassMeetingUpdateInput!): ClassMeeting
-  updateClassMeetings(data: [ClassMeetingUpdateArgs!]!): [ClassMeeting]
-  deleteClassMeeting(where: ClassMeetingWhereUniqueInput!): ClassMeeting
-  deleteClassMeetings(where: [ClassMeetingWhereUniqueInput!]!): [ClassMeeting]
+  createClassSession(data: ClassSessionCreateInput!): ClassSession
+  createClassSessions(data: [ClassSessionCreateInput!]!): [ClassSession]
+  updateClassSession(where: ClassSessionWhereUniqueInput!, data: ClassSessionUpdateInput!): ClassSession
+  updateClassSessions(data: [ClassSessionUpdateArgs!]!): [ClassSession]
+  deleteClassSession(where: ClassSessionWhereUniqueInput!): ClassSession
+  deleteClassSessions(where: [ClassSessionWhereUniqueInput!]!): [ClassSession]
   createAttendanceRecord(data: AttendanceRecordCreateInput!): AttendanceRecord
   createAttendanceRecords(data: [AttendanceRecordCreateInput!]!): [AttendanceRecord]
   updateAttendanceRecord(where: AttendanceRecordWhereUniqueInput!, data: AttendanceRecordUpdateInput!): AttendanceRecord
@@ -1413,9 +1457,9 @@ type Query {
   enrollment(where: EnrollmentWhereUniqueInput!): Enrollment
   enrollments(where: EnrollmentWhereInput! = {}, orderBy: [EnrollmentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: EnrollmentWhereUniqueInput): [Enrollment!]
   enrollmentsCount(where: EnrollmentWhereInput! = {}): Int
-  classMeeting(where: ClassMeetingWhereUniqueInput!): ClassMeeting
-  classMeetings(where: ClassMeetingWhereInput! = {}, orderBy: [ClassMeetingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ClassMeetingWhereUniqueInput): [ClassMeeting!]
-  classMeetingsCount(where: ClassMeetingWhereInput! = {}): Int
+  classSession(where: ClassSessionWhereUniqueInput!): ClassSession
+  classSessions(where: ClassSessionWhereInput! = {}, orderBy: [ClassSessionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ClassSessionWhereUniqueInput): [ClassSession!]
+  classSessionsCount(where: ClassSessionWhereInput! = {}): Int
   attendanceRecord(where: AttendanceRecordWhereUniqueInput!): AttendanceRecord
   attendanceRecords(where: AttendanceRecordWhereInput! = {}, orderBy: [AttendanceRecordOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AttendanceRecordWhereUniqueInput): [AttendanceRecord!]
   attendanceRecordsCount(where: AttendanceRecordWhereInput! = {}): Int

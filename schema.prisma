@@ -121,7 +121,7 @@ model Class {
   instructorId       String?        @map("instructor")
   teachingAssistants User[]         @relation("Class_teachingAssistants")
   enrollments        Enrollment[]   @relation("Enrollment_class")
-  meetings           ClassMeeting[] @relation("ClassMeeting_class")
+  sessions           ClassSession[] @relation("ClassSession_class")
   createdAt          DateTime?      @default(now())
   updatedAt          DateTime?      @updatedAt
 
@@ -165,41 +165,47 @@ model Enrollment {
   @@index([classId])
 }
 
-model ClassMeeting {
-  id                 String                 @id @default(cuid())
-  scheduledDate      DateTime               @postgresql.Date
-  scheduledStartTime String                 @default("")
-  scheduledEndTime   String                 @default("")
-  actualDate         DateTime?              @postgresql.Date
-  status             ClassMeetingStatusType @default(scheduled)
-  isMidterm          Boolean                @default(false)
-  isFinal            Boolean                @default(false)
-  room               String                 @default("")
-  class              Class?                 @relation("ClassMeeting_class", fields: [classId], references: [id])
-  classId            String?                @map("class")
-  attendanceRecords  AttendanceRecord[]     @relation("AttendanceRecord_classMeeting")
-  createdAt          DateTime?              @default(now())
-  updatedAt          DateTime?              @updatedAt
+model ClassSession {
+  id                 String                      @id @default(cuid())
+  scheduledDate      DateTime                    @postgresql.Date
+  dayOfWeek          String                      @default("")
+  courseNumber       String                      @default("")
+  scheduledStartTime String                      @default("")
+  scheduledEndTime   String                      @default("")
+  actualDate         DateTime?                   @postgresql.Date
+  sessionType        ClassSessionSessionTypeType @default(regular)
+  status             ClassSessionStatusType      @default(scheduled)
+  isMidterm          Boolean                     @default(false)
+  isFinal            Boolean                     @default(false)
+  room               String                      @default("")
+  class              Class?                      @relation("ClassSession_class", fields: [classId], references: [id])
+  classId            String?                     @map("class")
+  attendanceRecords  AttendanceRecord[]          @relation("AttendanceRecord_classSession")
+  createdAt          DateTime?                   @default(now())
+  updatedAt          DateTime?                   @updatedAt
 
   @@index([classId])
 }
 
 model AttendanceRecord {
-  id             String                     @id @default(cuid())
-  status         AttendanceRecordStatusType @default(present)
-  markedAt       DateTime?                  @default(now())
-  notes          String                     @default("")
-  enrollment     Enrollment?                @relation("AttendanceRecord_enrollment", fields: [enrollmentId], references: [id])
-  enrollmentId   String?                    @map("enrollment")
-  classMeeting   ClassMeeting?              @relation("AttendanceRecord_classMeeting", fields: [classMeetingId], references: [id])
-  classMeetingId String?                    @map("classMeeting")
-  markedBy       User?                      @relation("AttendanceRecord_markedBy", fields: [markedById], references: [id])
-  markedById     String?                    @map("markedBy")
-  createdAt      DateTime?                  @default(now())
-  updatedAt      DateTime?                  @updatedAt
+  id              String                     @id @default(cuid())
+  status          AttendanceRecordStatusType @default(present)
+  clockInTime     DateTime?
+  clockOutTime    DateTime?
+  sessionDuration Int?
+  markedAt        DateTime?                  @default(now())
+  notes           String                     @default("")
+  enrollment      Enrollment?                @relation("AttendanceRecord_enrollment", fields: [enrollmentId], references: [id])
+  enrollmentId    String?                    @map("enrollment")
+  classSession    ClassSession?              @relation("AttendanceRecord_classSession", fields: [classSessionId], references: [id])
+  classSessionId  String?                    @map("classSession")
+  markedBy        User?                      @relation("AttendanceRecord_markedBy", fields: [markedById], references: [id])
+  markedById      String?                    @map("markedBy")
+  createdAt       DateTime?                  @default(now())
+  updatedAt       DateTime?                  @updatedAt
 
   @@index([enrollmentId])
-  @@index([classMeetingId])
+  @@index([classSessionId])
   @@index([markedById])
 }
 
@@ -216,7 +222,14 @@ enum EnrollmentStatusType {
   dropped
 }
 
-enum ClassMeetingStatusType {
+enum ClassSessionSessionTypeType {
+  regular
+  midterm
+  final
+  lab
+}
+
+enum ClassSessionStatusType {
   scheduled
   completed
   cancelled

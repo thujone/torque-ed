@@ -11,7 +11,7 @@ import { Holiday } from './Holiday';
 import { Class } from './Class';
 import { Student } from './Student';
 import { Enrollment } from './Enrollment';
-import { ClassMeeting } from './ClassMeeting';
+import { ClassSession } from './ClassSession';
 import { AttendanceRecord } from './AttendanceRecord';
 
 export const lists: Lists = {
@@ -24,6 +24,6 @@ export const lists: Lists = {
   Class,
   Student,
   Enrollment,
-  ClassMeeting,
+  ClassSession,
   AttendanceRecord,
 };

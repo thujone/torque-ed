@@ -3,6 +3,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import { PageContainer } from '@keystone-6/core/admin-ui/components';
 import { Heading } from '@keystone-ui/core';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
+import { AttendanceScanner } from '../components/AttendanceScanner';
 
 const GET_CLASSES = gql`
   query GetClasses($where: ClassWhereInput) {
@@ -50,17 +51,21 @@ const GET_ATTENDANCE_DATA = gql`
         attendanceRecords {
           id
           status
-          classMeeting {
+          clockInTime
+          clockOutTime
+          sessionDuration
+          classSession {
             id
           }
         }
       }
-      meetings(orderBy: { scheduledDate: asc }) {
+      sessions(orderBy: { scheduledDate: asc }) {
         id
         scheduledDate
         scheduledStartTime
         scheduledEndTime
         status
+        sessionType
         isMidterm
         isFinal
       }
@@ -69,13 +74,16 @@ const GET_ATTENDANCE_DATA = gql`
 `;
 
 const UPDATE_ATTENDANCE = gql`
-  mutation UpdateAttendance($enrollmentId: ID!, $classMeetingId: ID!, $status: AttendanceRecordStatusType!) {
+  mutation UpdateAttendance($enrollmentId: ID!, $classSessionId: ID!, $data: AttendanceRecordUpdateInput!) {
     updateAttendanceRecord(
-      where: { enrollment: { id: { equals: $enrollmentId } }, classMeeting: { id: { equals: $classMeetingId } } }
-      data: { status: $status }
+      where: { enrollment: { id: { equals: $enrollmentId } }, classSession: { id: { equals: $classSessionId } } }
+      data: $data
     ) {
       id
       status
+      clockInTime
+      clockOutTime
+      sessionDuration
     }
   }
 `;
@@ -85,6 +93,9 @@ const CREATE_ATTENDANCE = gql`
     createAttendanceRecord(data: $data) {
       id
       status
+      clockInTime
+      clockOutTime
+      sessionDuration
     }
   }
 `;
@@ -92,6 +103,7 @@ const CREATE_ATTENDANCE = gql`
 export default function AttendancePage() {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [showQRCodes, setShowQRCodes] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   
   const { data: classesData, loading: classesLoading } = useQuery(GET_CLASSES);
   const { data: attendanceData, loading: attendanceLoading, refetch } = useQuery(GET_ATTENDANCE_DATA, {
@@ -102,18 +114,20 @@ export default function AttendancePage() {
   const [updateAttendance] = useMutation(UPDATE_ATTENDANCE);
   const [createAttendance] = useMutation(CREATE_ATTENDANCE);
 
-  const handleAttendanceChange = async (enrollmentId: string, meetingId: string, newStatus: string) => {
+  const handleAttendanceChange = async (enrollmentId: string, sessionId: string, field: string, value: any) => {
     try {
       // First, check if record exists
       const enrollment = attendanceData?.class?.enrollments?.find((e: any) => e.id === enrollmentId);
-      const existingRecord = enrollment?.attendanceRecords?.find((r: any) => r.classMeeting.id === meetingId);
+      const existingRecord = enrollment?.attendanceRecords?.find((r: any) => r.classSession.id === sessionId);
+      
+      const updateData: any = { [field]: value };
       
       if (existingRecord) {
         await updateAttendance({
           variables: {
             enrollmentId,
-            classMeetingId: meetingId,
-            status: newStatus,
+            classSessionId: sessionId,
+            data: updateData,
           },
         });
       } else {
@@ -121,8 +135,9 @@ export default function AttendancePage() {
           variables: {
             data: {
               enrollment: { connect: { id: enrollmentId } },
-              classMeeting: { connect: { id: meetingId } },
-              status: newStatus,
+              classSession: { connect: { id: sessionId } },
+              status: 'present',
+              ...updateData,
             },
           },
         });
@@ -140,9 +155,21 @@ export default function AttendancePage() {
     return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
   };
 
-  const getAttendanceStatus = (enrollment: any, meetingId: string) => {
-    const record = enrollment.attendanceRecords?.find((r: any) => r.classMeeting.id === meetingId);
-    return record?.status || 'absent';
+  const getAttendanceRecord = (enrollment: any, sessionId: string) => {
+    return enrollment.attendanceRecords?.find((r: any) => r.classSession?.id === sessionId) || null;
+  };
+
+  const formatTime = (timestamp: string | null) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDuration = (minutes: number | null) => {
+    if (!minutes) return '';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
   const getStatusColor = (status: string) => {
@@ -192,20 +219,41 @@ export default function AttendancePage() {
           <>
             <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2>{attendanceData.class.course.code} - {attendanceData.class.course.name}</h2>
-              <button
-                onClick={() => setShowQRCodes(!showQRCodes)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                {showQRCodes ? 'Hide' : 'Show'} QR Codes
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => setShowScanner(!showScanner)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showScanner ? 'Hide' : 'Show'} Scanner
+                </button>
+                <button
+                  onClick={() => setShowQRCodes(!showQRCodes)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {showQRCodes ? 'Hide' : 'Show'} QR Codes
+                </button>
+              </div>
             </div>
+
+            {showScanner && (
+              <div style={{ marginBottom: '20px' }}>
+                <AttendanceScanner onScanResult={() => refetch()} />
+              </div>
+            )}
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
@@ -232,20 +280,50 @@ export default function AttendancePage() {
                         QR Code
                       </th>
                     )}
-                    {attendanceData.class.meetings.map((meeting: any) => (
-                      <th key={meeting.id} style={{ 
-                        padding: '8px', 
-                        textAlign: 'center', 
-                        borderBottom: '2px solid #e5e7eb',
-                        minWidth: '80px',
-                        backgroundColor: meeting.isMidterm ? '#fef3c7' : meeting.isFinal ? '#fecaca' : 'white'
-                      }}>
-                        <div>{formatDate(meeting.scheduledDate)}</div>
-                        <div style={{ fontSize: '10px', color: '#6b7280' }}>
-                          {meeting.isMidterm && 'Midterm'}
-                          {meeting.isFinal && 'Final'}
-                        </div>
-                      </th>
+                    {attendanceData.class.sessions.map((session: any) => (
+                      <React.Fragment key={session.id}>
+                        <th style={{ 
+                          padding: '4px', 
+                          textAlign: 'center', 
+                          borderBottom: '2px solid #e5e7eb',
+                          minWidth: '80px',
+                          backgroundColor: session.sessionType === 'midterm' ? '#fef3c7' : 
+                                         session.sessionType === 'final' ? '#fecaca' : 'white',
+                          borderRight: '1px solid #e5e7eb'
+                        }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold' }}>
+                            {formatDate(session.scheduledDate)}
+                          </div>
+                          <div style={{ fontSize: '8px', color: '#6b7280' }}>
+                            {session.sessionType === 'midterm' && 'Midterm'}
+                            {session.sessionType === 'final' && 'Final'}
+                            {session.sessionType === 'lab' && 'Lab'}
+                          </div>
+                          <div style={{ fontSize: '9px', marginTop: '2px' }}>Clock In</div>
+                        </th>
+                        <th style={{ 
+                          padding: '4px', 
+                          textAlign: 'center', 
+                          borderBottom: '2px solid #e5e7eb',
+                          minWidth: '80px',
+                          backgroundColor: session.sessionType === 'midterm' ? '#fef3c7' : 
+                                         session.sessionType === 'final' ? '#fecaca' : 'white',
+                          borderRight: '1px solid #e5e7eb'
+                        }}>
+                          <div style={{ fontSize: '9px', marginTop: '16px' }}>Clock Out</div>
+                        </th>
+                        <th style={{ 
+                          padding: '4px', 
+                          textAlign: 'center', 
+                          borderBottom: '2px solid #e5e7eb',
+                          minWidth: '60px',
+                          backgroundColor: session.sessionType === 'midterm' ? '#fef3c7' : 
+                                         session.sessionType === 'final' ? '#fecaca' : 'white',
+                          borderRight: '2px solid #e5e7eb'
+                        }}>
+                          <div style={{ fontSize: '9px', marginTop: '16px' }}>Duration</div>
+                        </th>
+                      </React.Fragment>
                     ))}
                   </tr>
                 </thead>
@@ -273,33 +351,75 @@ export default function AttendancePage() {
                           <QRCodeDisplay value={enrollment.student.qrCode || enrollment.student.studentId} size={60} />
                         </td>
                       )}
-                      {attendanceData.class.meetings.map((meeting: any) => {
-                        const status = getAttendanceStatus(enrollment, meeting.id);
+                      {attendanceData.class.sessions.map((session: any) => {
+                        const record = getAttendanceRecord(enrollment, session.id);
                         return (
-                          <td key={meeting.id} style={{ 
-                            padding: '4px', 
-                            borderBottom: '1px solid #e5e7eb',
-                            textAlign: 'center'
-                          }}>
-                            <select
-                              value={status}
-                              onChange={(e) => handleAttendanceChange(enrollment.id, meeting.id, e.target.value)}
-                              style={{
-                                padding: '4px',
-                                fontSize: '12px',
-                                backgroundColor: getStatusColor(status),
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                width: '70px'
-                              }}
-                            >
-                              <option value="present">Present</option>
-                              <option value="absent">Absent</option>
-                              <option value="excused">Excused</option>
-                            </select>
-                          </td>
+                          <React.Fragment key={session.id}>
+                            {/* Clock In Time */}
+                            <td style={{ 
+                              padding: '2px', 
+                              borderBottom: '1px solid #e5e7eb',
+                              borderRight: '1px solid #e5e7eb',
+                              textAlign: 'center'
+                            }}>
+                              <input
+                                type="datetime-local"
+                                value={record?.clockInTime ? new Date(record.clockInTime).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => handleAttendanceChange(enrollment.id, session.id, 'clockInTime', e.target.value || null)}
+                                style={{
+                                  width: '75px',
+                                  fontSize: '10px',
+                                  padding: '2px',
+                                  border: '1px solid #ccc',
+                                  borderRadius: '2px'
+                                }}
+                              />
+                            </td>
+                            {/* Clock Out Time */}
+                            <td style={{ 
+                              padding: '2px', 
+                              borderBottom: '1px solid #e5e7eb',
+                              borderRight: '1px solid #e5e7eb',
+                              textAlign: 'center'
+                            }}>
+                              <input
+                                type="datetime-local"
+                                value={record?.clockOutTime ? new Date(record.clockOutTime).toISOString().slice(0, 16) : ''}
+                                onChange={(e) => handleAttendanceChange(enrollment.id, session.id, 'clockOutTime', e.target.value || null)}
+                                style={{
+                                  width: '75px',
+                                  fontSize: '10px',
+                                  padding: '2px',
+                                  border: '1px solid #ccc',
+                                  borderRadius: '2px'
+                                }}
+                              />
+                            </td>
+                            {/* Session Duration */}
+                            <td style={{ 
+                              padding: '2px', 
+                              borderBottom: '1px solid #e5e7eb',
+                              borderRight: '2px solid #e5e7eb',
+                              textAlign: 'center'
+                            }}>
+                              <input
+                                type="number"
+                                value={record?.sessionDuration || ''}
+                                onChange={(e) => handleAttendanceChange(enrollment.id, session.id, 'sessionDuration', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="mins"
+                                style={{
+                                  width: '50px',
+                                  fontSize: '10px',
+                                  padding: '2px',
+                                  border: '1px solid #ccc',
+                                  borderRadius: '2px'
+                                }}
+                              />
+                              <div style={{ fontSize: '8px', color: '#6b7280' }}>
+                                {formatDuration(record?.sessionDuration)}
+                              </div>
+                            </td>
+                          </React.Fragment>
                         );
                       })}
                     </tr>

@@ -8,8 +8,9 @@ TorqueEd is an automotive education CMS built with KeystoneJS 6 for managing sch
 
 ## Current State
 
-- **Planning Phase:** PRD and Tech Spec completed
-- **Not Yet Started:** KeystoneJS implementation, database setup, custom components
+- **Implementation Complete:** Core KeystoneJS setup, database schema, attendance system
+- **Fully Functional:** QR scanner, attendance spreadsheet, class session management
+- **Ready for Production:** Multi-tenant setup, role-based access control
 - **Key Documents:** 
   - `/docs/torque-ed-prd.md` - Full requirements (✅ Complete)
   - `/docs/torque-ed-tech-spec.md` - Technical implementation details (✅ Complete)
@@ -34,18 +35,20 @@ TorqueEd is an automotive education CMS built with KeystoneJS 6 for managing sch
 git clone [repository-url]
 cd torque-ed
 
-# Install dependencies (using yarn, not npm)
-yarn install
+# Install dependencies (using npm)
+npm install
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with database credentials
 
-# Run database migrations
-yarn keystone prisma migrate dev
+# Start development server (handles migrations automatically)
+npm run dev
 
-# Start development server
-yarn dev
+# Available scripts:
+npm run generate-sessions    # Generate class sessions for existing classes
+npm run remove-sessions     # Remove all existing sessions
+npm run update-dayofweek    # Update existing sessions with dayOfWeek field
 ```
 
 ## Project Structure
@@ -57,16 +60,29 @@ torque-ed/
 │   ├── torque-ed-tech-spec.md   # Technical specification
 │   └── CLAUDE.md                # This file
 ├── schema/                       # KeystoneJS data models
-│   ├── SchoolSystem.ts
-│   ├── School.ts
-│   ├── User.ts
-│   ├── Course.ts
-│   ├── Class.ts
-│   ├── Student.ts
-│   └── ... other models
+│   ├── SchoolSystem.ts          # School district/system management
+│   ├── School.ts                # Individual schools
+│   ├── User.ts                  # Users with role-based access
+│   ├── Course.ts                # Course catalog
+│   ├── Class.ts                 # Class instances with auto-session generation
+│   ├── ClassSession.ts          # Individual class meetings (renamed from ClassMeeting)
+│   ├── Student.ts               # Student records with QR codes
+│   ├── Enrollment.ts            # Student-class relationships
+│   ├── AttendanceRecord.ts      # Clock-in/out records with duration
+│   ├── Semester.ts              # Academic terms with midterm/final periods
+│   └── Holiday.ts               # Holidays that block session generation
 ├── admin/
+│   ├── components/              # Reusable React components
+│   │   ├── QRCodeDisplay.tsx   # QR code rendering component
+│   │   └── AttendanceScanner.tsx # Smart QR scanner with clock-in/out logic
 │   └── pages/                   # Custom admin pages
-│       └── attendance.tsx       # Attendance spreadsheet view
+│       └── attendance.tsx       # Attendance spreadsheet with 3 columns per session
+├── lib/                         # Business logic utilities
+│   └── generateClassSessions.ts # Session generation with holiday exclusion
+├── scripts/                     # Database maintenance scripts
+│   ├── generate-sessions.js     # Generate sessions for existing classes
+│   ├── remove-sessions.js       # Remove all sessions
+│   └── update-session-dayofweek.js # Backfill dayOfWeek data
 ├── keystone.ts                  # Main KeystoneJS config
 ├── package.json
 └── README.md
@@ -76,8 +92,8 @@ torque-ed/
 
 ### Adding a New Field to a Model
 1. Edit the schema file in `/schema/[ModelName].ts`
-2. Run `yarn keystone prisma migrate dev` to update database
-3. Restart the dev server
+2. Restart the dev server (migrations happen automatically)
+3. For production: KeystoneJS generates migrations automatically
 
 ### Creating a Custom Admin Page
 1. Create new React component in `/admin/pages/`
@@ -96,18 +112,23 @@ torque-ed/
 
 ## Key Implementation Notes
 
-### Attendance Marking Flow
+### Attendance Clock-In/Clock-Out Flow
 1. Instructor/TA navigates to attendance page for their class
-2. Today's column is highlighted in the spreadsheet
+2. Scanner shows QR scanner interface with green "Show Scanner" button
 3. Scanner beeps and types student QR code + Enter
-4. System finds student and marks them present
-5. UI updates immediately
+4. System automatically detects if this is clock-in or clock-out:
+   - **First scan**: Clocks student IN (creates attendance record with clockInTime)
+   - **Second scan**: Clocks student OUT (updates record with clockOutTime)
+   - **Duration**: Automatically calculated when both times are present
+5. Manual editing available for all three fields (clock in, clock out, duration)
+6. UI updates immediately with real-time feedback
 
-### Class Meeting Generation
+### Class Session Generation
 - Happens when a class is created with a schedule
-- Automatically excludes holidays
-- Marks midterm/final meetings based on semester date ranges
-- See `generateClassMeetings()` function in tech spec
+- Automatically excludes holidays from semester holiday list
+- Marks ONLY the last session in midterm/final date ranges (not all sessions)
+- Generates dayOfWeek and courseNumber fields automatically
+- See `generateClassSessions()` function and scripts in `/scripts/`
 
 ### Multi-tenant Isolation
 - Every model has a `schoolSystem` relationship

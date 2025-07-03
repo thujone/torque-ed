@@ -207,14 +207,22 @@ query getAttendanceGrid($classId: ID!) {
       attendanceRecords {
         id
         status
-        classMeeting {
+        clockInTime
+        clockOutTime
+        sessionDuration
+        classSession {
           id
         }
       }
     }
-    meetings(orderBy: { scheduledDate: asc }) {
+    sessions(orderBy: { scheduledDate: asc }) {
       id
       scheduledDate
+      dayOfWeek
+      courseNumber
+      sessionType
+      scheduledStartTime
+      scheduledEndTime
       status
     }
   }
@@ -358,35 +366,65 @@ mutation promoteFromWaitlist($enrollmentId: ID!) {
 
 #### Attendance Management
 ```graphql
-# Mark attendance
-mutation markAttendance(
+# Clock in student (first scan)
+mutation clockInStudent(
   $enrollmentId: ID!
-  $meetingId: ID!
-  $status: AttendanceRecordStatusType!
+  $sessionId: ID!
 ) {
   createAttendanceRecord(
     data: {
       enrollment: { connect: { id: $enrollmentId } }
-      classMeeting: { connect: { id: $meetingId } }
-      status: $status
-      markedAt: "${new Date().toISOString()}"
+      classSession: { connect: { id: $sessionId } }
+      status: present
+      clockInTime: "${new Date().toISOString()}"
       markedBy: { connect: { id: $currentUserId } }
     }
   ) {
     id
     status
-    markedAt
+    clockInTime
   }
 }
 
-# Update attendance
-mutation updateAttendance($id: ID!, $status: AttendanceRecordStatusType!) {
+# Clock out student (second scan)
+mutation clockOutStudent(
+  $enrollmentId: ID!
+  $sessionId: ID!
+) {
   updateAttendanceRecord(
-    where: { id: $id }
-    data: { status: $status }
+    where: { 
+      enrollment: { id: { equals: $enrollmentId } }
+      classSession: { id: { equals: $sessionId } }
+    }
+    data: {
+      clockOutTime: "${new Date().toISOString()}"
+    }
+  ) {
+    id
+    clockInTime
+    clockOutTime
+    sessionDuration
+  }
+}
+
+# Manual update attendance (for teachers/TAs)
+mutation updateAttendanceManual(
+  $enrollmentId: ID!
+  $sessionId: ID!
+  $data: AttendanceRecordUpdateInput!
+) {
+  updateAttendanceRecord(
+    where: { 
+      enrollment: { id: { equals: $enrollmentId } }
+      classSession: { id: { equals: $sessionId } }
+    }
+    data: $data
   ) {
     id
     status
+    clockInTime
+    clockOutTime
+    sessionDuration
   }
 }
 

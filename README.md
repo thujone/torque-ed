@@ -2,6 +2,14 @@
 
 A comprehensive school management system designed specifically for automotive education programs, built with KeystoneJS 6.
 
+## 📋 Key Documentation
+
+### 🎯 [Product Requirements Document (PRD)](/docs/torque-ed-prd.md)
+Complete business requirements, user stories, and feature specifications for the TorqueEd automotive education CMS.
+
+### 🔧 [Technical Specification](/docs/torque-ed-tech-spec.md)
+Detailed technical implementation guide, architecture decisions, and development roadmap.
+
 ## Quick Start
 
 ### Prerequisites
@@ -162,6 +170,65 @@ npm run prisma studio
 ## Support
 
 For questions or issues, contact Rich Goldman at rich@comfypants.org
+
+## 📚 Additional Documentation
+
+- **[System Architecture](/docs/ARCHITECTURE.md)** - Detailed system design and implementation patterns
+- **[API Specification](/docs/API_SPEC.md)** - Complete GraphQL/REST API documentation
+- **[Domain Model](/docs/DOMAIN_MODEL.md)** - Business logic, rules, and terminology
+- **[Deployment Guide](/docs/DEPLOYMENT.md)** - Infrastructure and deployment procedures
+- **[AI Assistant Instructions](/docs/CLAUDE.md)** - Development guidelines and project context
+
+## 📸 System Screenshots
+
+The following screenshots show the key features and interfaces of TorqueEd, organized from general administration to specific attendance tracking:
+
+### System Administration
+![Dashboard](screenshots/dashboard.png)
+*Main dashboard showing system overview*
+
+![School Systems](screenshots/school-systems.png)
+*Multi-tenant school system management*
+
+![Schools](screenshots/schools.png)
+*Individual school management within a system*
+
+![Users](screenshots/users.png)
+*User management with role-based access control*
+
+### Academic Management
+![Semesters](screenshots/semesters.png)
+*Academic term management with midterm/final periods*
+
+![Holidays](screenshots/holidays.png)
+*Holiday calendar management for session generation*
+
+![Courses](screenshots/courses.png)
+*Course catalog management*
+
+![Courses Detail](screenshots/courses-2.png)
+*Detailed course information and settings*
+
+### Class Management
+![Classes](screenshots/classes.png)
+*Class instance management with scheduling*
+
+![Class Sessions](screenshots/class-sessions.png)
+*Individual class session management with auto-generation*
+
+### Student Management
+![Students](screenshots/students.png)
+*Student records with QR code generation*
+
+![Enrollments](screenshots/enrollments.png)
+*Class enrollment management*
+
+### Attendance Tracking
+![Attendance Records](screenshots/attendance-records.png)
+*Individual attendance record management*
+
+![Attendance Spreadsheet](screenshots/attendance-spreadsheet.png)
+*Comprehensive attendance spreadsheet with clock-in/clock-out tracking*
 
 ## License
 

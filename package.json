@@ -9,7 +9,10 @@
     "build": "keystone build",
     "postinstall": "keystone postinstall",
     "prisma": "keystone prisma",
-    "seed": "tsx seed.ts"
+    "seed": "tsx seed.ts",
+    "generate-sessions": "node scripts/generate-sessions.js",
+    "remove-sessions": "node scripts/remove-sessions.js",
+    "update-dayofweek": "node scripts/update-session-dayofweek.js"
   },
   "dependencies": {
     "@keystone-6/auth": "^8.1.0",

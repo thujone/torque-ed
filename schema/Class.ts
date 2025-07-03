@@ -1,5 +1,6 @@
 import { list } from '@keystone-6/core';
 import { text, relationship, timestamp, integer, json } from '@keystone-6/core/fields';
+import { generateClassSessions } from '../lib/generateClassSessions';
 
 export const Class = list({
   access: {
@@ -119,9 +120,14 @@ export const Class = list({
       ref: 'Enrollment.class',
       many: true,
     }),
-    meetings: relationship({ 
-      ref: 'ClassMeeting.class',
+    sessions: relationship({ 
+      ref: 'ClassSession.class',
       many: true,
+      ui: {
+        displayMode: 'cards',
+        cardFields: ['scheduledDate', 'sessionType', 'status'],
+        linkToItem: true,
+      },
     }),
     
     // Timestamps
@@ -144,9 +150,9 @@ export const Class = list({
   hooks: {
     afterOperation: {
       create: async ({ item, context }) => {
-        // TODO: Generate class meetings after class creation
-        // This will be implemented in a separate utility function
-        console.log(`Class created: ${item.id}, generating meetings...`);
+        // Generate class sessions after class creation
+        console.log(`Class created: ${item.id}, generating sessions...`);
+        await generateClassSessions(context, item.id);
       },
     },
   },

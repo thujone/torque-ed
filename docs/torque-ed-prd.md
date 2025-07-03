@@ -4,11 +4,11 @@
 **Version:** 1.0  
 **Date:** July 3, 2025  
 **Author:** Rich Goldman (rich@comfypants.org)  
-**Status:** Draft
+**Status:** In Development - Phase A
 
 ## 1. Executive Summary
 
-TorqueEd is a comprehensive school management system designed specifically for automotive education programs at colleges. This document outlines Phase A of the project, which focuses on core administrative functions and attendance tracking through QR code scanning. The system enables administrators to manage schools, courses, classes, and students while providing robust, real-time attendance tracking. Phase B will introduce grading capabilities, and Phase C will add comprehensive coursework tracking. The primary goal of Phase A is to streamline administrative tasks and provide accurate, real-time attendance tracking for automotive education programs.
+TorqueEd is a comprehensive school management system designed specifically for automotive education programs at colleges. Phase A is currently in development and focuses on core administrative functions and attendance tracking through QR code scanning. The system will enable administrators to manage schools, courses, classes, and students while providing robust, real-time attendance tracking. The development includes implementing a clock-in/clock-out attendance system that tracks student presence time through smart QR scanning that automatically detects clock-in vs clock-out actions, with manual override capabilities for instructors. Phase B will introduce grading capabilities, and Phase C will add comprehensive coursework tracking.
 
 ## 2. Problem Statement
 
@@ -18,6 +18,8 @@ TorqueEd is a comprehensive school management system designed specifically for a
 - Difficult to track students across multiple classes and semesters
 - Limited visibility into attendance patterns and student engagement
 - Manual creation and maintenance of attendance spreadsheets
+- Need for tracking actual time spent in class (clock-in/clock-out)
+- Complex requirements for midterm and final session identification
 
 ### Target Users
 1. **Super Administrators** - Technology staff managing the entire system
@@ -33,6 +35,8 @@ TorqueEd is a comprehensive school management system designed specifically for a
 2. Eliminate manual spreadsheet creation and maintenance
 3. Provide real-time attendance visibility across all classes
 4. Enable efficient student roster management
+5. Implement clock-in/clock-out tracking with session duration
+6. Support manual override capabilities for teachers
 
 ### Success Metrics
 - Time to mark attendance for a 30-student class: < 2 minutes
@@ -40,10 +44,11 @@ TorqueEd is a comprehensive school management system designed specifically for a
 - User adoption rate: 100% within first semester
 - Data accuracy: 100% for attendance records
 - Administrator setup time for new semester: < 1 day
+- Clock-in/out processing time: < 5 seconds per student
 
 ## 4. Feature Requirements
 
-### 4.1 MVP Features (Phase 1)
+### 4.1 MVP Features (Phase A - In Development)
 
 #### Hierarchy Management
 - **School System Management**
@@ -62,8 +67,11 @@ TorqueEd is a comprehensive school management system designed specifically for a
 - **Class Management**
   - Create class instances for each semester (e.g., "AUTO-302 Morning II")
   - Set enrollment limits and manage waitlists
-  - Define meeting schedules (days, times, rooms)
-  - Generate complete list of class meetings for the semester
+  - Define meeting schedules (days, times, rooms, building)
+  - Generate complete list of class sessions for the semester
+  - Support for midterm and final session identification
+  - Holiday exclusion during session generation
+  - Auto-populate course number and day-of-week for sessions
 
 #### User Management
 - **Role-Based Access Control**
@@ -72,10 +80,12 @@ TorqueEd is a comprehensive school management system designed specifically for a
   - Instructor: Class roster and attendance management
   - TA: Attendance tracking only
   - Support multiple roles per user (e.g., TA in one class, student in another)
+  - Row-level security ensuring data isolation
 
 - **Instructor Assignment**
   - Assign instructors and TAs to classes
   - Support teaching multiple classes across schools
+  - Teaching assistants can mark and edit attendance records
 
 #### Calendar and Scheduling
 - **Semester Management**
@@ -83,36 +93,47 @@ TorqueEd is a comprehensive school management system designed specifically for a
   - Define holidays and breaks
   - Set midterm and final exam date ranges
   
-- **Class Meeting Generation**
-  - Automatically generate all class meetings based on schedule
+- **Class Session Generation**
+  - Automatically generate all class sessions based on schedule
   - Account for holidays and breaks
   - Support simple recurring patterns (MWF, TTh, etc.)
-  - Allow individual meeting cancellations
+  - Only mark last session in midterm/final periods (not all sessions)
+  - Auto-populate course number and day-of-week for each session
+  - Allow individual session cancellations and time modifications
+  - Auto-calculate end times when start time changes
 
 #### Attendance System
 - **QR Code Generation**
   - Generate unique QR codes for each student
   - QR codes persist across semesters
+  - Visual QR code display in attendance spreadsheet
   
-- **Attendance Tracking**
+- **Clock-In/Clock-Out Tracking**
+  - Smart scanner detection: First scan = Clock IN, Second scan = Clock OUT
+  - Real-time feedback showing student check-in/out status
+  - Automatic session duration calculation when both times recorded
+  - Multi-class support: Automatically finds today's sessions for student
   - Support USB/Bluetooth QR scanners (keyboard input)
-  - Real-time attendance marking
-  - Manual attendance entry as backup
-  - Track: Present, Absent, Excused
+  - Manual override: Teachers can edit all fields (clock in, out, duration)
+  - Track presence with precise timestamps and duration
   - Edit historical attendance records
   
 - **Attendance Spreadsheet View**
-  - Auto-generated grid view (students × class dates)
-  - Today's date highlighted
+  - Three columns per session: Clock In Time | Clock Out Time | Duration
+  - Auto-generated grid with course numbers and day-of-week
+  - Real-time duration display (e.g., "1h 30m", "45m")
+  - Manual editing capability for all attendance fields
+  - Visual session type indicators for midterm/final sessions
+  - Smart scanner interface for QR code input
+  - Datetime inputs for precise time entry
   - Cannot directly edit student roster (must use CMS)
-  - Visual indicators for attendance status
-  - Printable/exportable format
 
 #### Notifications
 - Email notifications for:
   - Student roster changes (add/drop)
   - Class cancellations
   - System changes affecting instructors
+- Email delivery service integration (SMTP/SendGrid/etc.)
 
 ### 4.2 Future Features (Phase 2+)
 
@@ -150,19 +171,24 @@ TorqueEd is a comprehensive school management system designed specifically for a
 ## 5. User Stories
 
 ### Administrator Stories
-1. As an administrator, I want to create a new semester and have all class meetings automatically generated so that I don't have to manually create each meeting.
-2. As an administrator, I want to add holidays to the calendar so that class meetings are not scheduled on those days.
+1. As an administrator, I want to create a new semester and have all class sessions automatically generated so that I don't have to manually create each session.
+2. As an administrator, I want to add holidays to the calendar so that class sessions are not scheduled on those days.
 3. As an administrator, I want to set class enrollment limits so that classes don't exceed capacity.
+4. As an administrator, I want to manage multiple schools within my system with complete data isolation.
 
 ### Instructor Stories
-1. As an instructor, I want to quickly mark attendance using a QR scanner so that I can focus on teaching rather than administrative tasks.
+1. As an instructor, I want to quickly mark attendance using a QR scanner with clock-in/clock-out tracking so that I can focus on teaching rather than administrative tasks.
 2. As an instructor, I want to add or drop students from my class with administrators being notified of changes.
-3. As an instructor, I want to mark a student's absence as excused so that it's properly reflected in records.
-4. As an instructor, I want to cancel a single class meeting and have all affected parties notified.
+3. As an instructor, I want to manually edit attendance times and durations when needed.
+4. As an instructor, I want to cancel a single class session and have all affected parties notified.
+5. As an instructor, I want to see how long each student was present in class.
+6. As an instructor, I want real-time feedback when QR codes are scanned.
 
 ### TA Stories
-1. As a TA, I want to mark attendance for students so that I can assist the instructor with administrative tasks.
+1. As a TA, I want to mark attendance for students using smart QR scanning so that I can assist the instructor with administrative tasks.
 2. As a TA, I want to correct attendance mistakes from previous classes so that records are accurate.
+3. As a TA, I want to see session duration information for each student.
+4. As a TA, I want to manually edit attendance fields when QR scanning isn't available.
 
 ## 6. Non-Functional Requirements
 
@@ -199,13 +225,13 @@ TorqueEd is a comprehensive school management system designed specifically for a
 ## 7. Technical Constraints
 
 ### Technology Stack
-- Backend: Node.js with TypeScript
-- CMS: KeystoneJS (or similar)
-- Database: PostgreSQL for structured data
-- Future: MongoDB for curriculum/coursework data
-- Frontend: React (via KeystoneJS admin UI)
-- Deployment: AWS or DigitalOcean
-- Containerization: Docker/Kubernetes ready
+- **Backend**: Node.js with TypeScript
+- **CMS**: KeystoneJS 6
+- **Database**: PostgreSQL for structured data
+- **Future**: MongoDB for curriculum/coursework data
+- **Frontend**: React (via KeystoneJS admin UI)
+- **Deployment**: AWS or DigitalOcean
+- **Containerization**: Docker/Kubernetes ready
 
 ### Integration Requirements
 - RESTful or GraphQL API
@@ -223,20 +249,37 @@ TorqueEd is a comprehensive school management system designed specifically for a
 The Minimum Viable Product must include:
 1. Complete hierarchy management (System → School → Course → Class → Student)
 2. User management with role-based permissions
-3. Semester and calendar management with automatic meeting generation
-4. QR-based attendance tracking with manual backup
-5. Attendance spreadsheet view within CMS
+3. Semester and calendar management with automatic session generation
+4. QR-based clock-in/clock-out attendance tracking with session duration
+5. Enhanced attendance spreadsheet view with three columns per session
 6. Basic notification system for roster changes
+
+### Enhanced MVP Features:
+- Smart scanner logic that automatically detects clock-in vs clock-out
+- Session duration tracking with real-time calculation and display
+- Manual override capabilities for teachers to edit all attendance fields
+- Visual session indicators for midterm/final sessions
+- Course number integration auto-populated in session views
+- Day-of-week display auto-calculated for every session
+- Smart midterm/final logic that only marks the last session in each period
 
 ## 9. Launch Criteria
 
 Before launch, the system must:
 1. Successfully import sample data for one complete school
-2. Process 1000 QR scans without errors
-3. Generate accurate attendance spreadsheets
+2. Process 1000 QR scans without errors (clock-in/clock-out functionality)
+3. Generate accurate attendance spreadsheets with duration tracking
 4. Pass security audit for student data protection
 5. Complete user acceptance testing with 5 instructors
 6. Have comprehensive documentation for administrators
+
+### Success Indicators:
+- All MVP features fully implemented and tested
+- Clock-in/clock-out system with automatic duration calculation working reliably
+- Smart scanner with immediate feedback operating correctly
+- Multi-tenant architecture with proper data isolation
+- Clean codebase with maintenance scripts
+- Complete technical documentation
 
 ## 10. Future Considerations
 
@@ -262,3 +305,4 @@ Before launch, the system must:
 - Industry certification tracking
 - Employer portal for student achievements
 - Canvas LMS integration
+
