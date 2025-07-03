@@ -92,7 +92,7 @@ torque-ed/
 ### Working with Access Control
 - Access rules are defined in each schema file
 - Test with different user roles: superAdmin, admin, instructor, ta
-- Use GraphQL playground at `http://localhost:3000/api/graphql` for testing
+- Use GraphQL playground at `http://localhost:3030/api/graphql` for testing
 
 ## Key Implementation Notes
 

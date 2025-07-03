@@ -1,153 +1,162 @@
 # TorqueEd - Automotive Education CMS
 
-A comprehensive school management system designed specifically for automotive education programs, featuring QR-based attendance tracking and automated course management.
-
-## Features
-
-### Phase A (Current)
-- 🏫 **Multi-School Management** - Manage multiple schools within a district
-- 📚 **Course & Class Organization** - Create courses and schedule class sections
-- 👥 **Role-Based Access** - Super admins, administrators, instructors, and teaching assistants
-- 📊 **Automated Scheduling** - Generate class meetings with holiday awareness
-- 📱 **QR Attendance Tracking** - Quick student check-in with handheld scanners
-- 📈 **Attendance Spreadsheets** - Real-time attendance grids for instructors
-
-### Coming Soon
-- **Phase B:** Grade tracking and gradebook management
-- **Phase C:** Coursework tracking with video submissions
-
-## Tech Stack
-
-- **Framework:** [KeystoneJS 6](https://keystonejs.com/)
-- **Database:** PostgreSQL
-- **Language:** TypeScript
-- **Runtime:** Node.js 20.x LTS
-- **Package Manager:** Yarn
-- **API:** GraphQL (auto-generated)
-- **Frontend:** React (KeystoneJS Admin UI)
+A comprehensive school management system designed specifically for automotive education programs, built with KeystoneJS 6.
 
 ## Quick Start
 
 ### Prerequisites
-
-- Node.js 20.x or higher
+- Node.js 20.x LTS
 - PostgreSQL 15+
-- Yarn package manager
-- USB/Bluetooth QR scanner (optional, for testing)
+- npm (comes with Node.js)
 
 ### Installation
 
-```bash
-# Clone the repository
-git clone [repository-url]
-cd torque-ed
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Install dependencies
-yarn install
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and update the database connection string and session secret.
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your database credentials
+3. **Set up PostgreSQL database**
+   
+   **Option A: Using Docker (Recommended for development)**
+   ```bash
+   # Start PostgreSQL in Docker
+   docker-compose -f docker-compose.dev.yml up -d postgres
+   
+   # Wait for database to be ready
+   docker-compose -f docker-compose.dev.yml logs postgres
+   ```
+   
+   **Option B: Using local PostgreSQL installation**
+   ```bash
+   # If you have createdb command available
+   createdb torqueed_dev
+   
+   # Or using psql directly
+   psql -U postgres -c "CREATE DATABASE torqueed_dev;"
+   
+   # Update .env with your local PostgreSQL credentials
+   ```
 
-# Run database migrations
-yarn keystone prisma migrate dev
+4. **Run database migrations**
+   ```bash
+   npm run prisma migrate dev
+   ```
 
-# Seed sample data (optional)
-yarn seed
+5. **Seed the database (optional)**
+   ```bash
+   npm run seed
+   ```
 
-# Start the development server
-yarn dev
-```
+6. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-The admin UI will be available at `http://localhost:3000`
-
-### Environment Variables
-
-Create a `.env` file with:
-
-```bash
-DATABASE_URL=postgresql://user:password@localhost:5432/torque-ed
-SESSION_SECRET=your-session-secret-min-32-chars
-```
+7. **Access the application**
+   - Open http://localhost:3030
+   - Create your first admin user when prompted
+   - The user will automatically have `superAdmin` role
 
 ## Project Structure
 
 ```
 torque-ed/
-├── docs/                 # Project documentation
-├── schema/              # Data model definitions
-├── admin/               # Custom admin UI components
-│   └── pages/          # Custom admin pages
-├── lib/                 # Utility functions
-├── public/              # Static assets
-└── keystone.ts          # Main configuration
+├── docs/                    # Project documentation
+├── schema/                  # KeystoneJS data models
+│   ├── index.ts            # Schema exports
+│   ├── User.ts             # User management
+│   ├── SchoolSystem.ts     # Multi-tenant organization
+│   ├── School.ts           # Individual schools
+│   ├── Course.ts           # Course definitions
+│   ├── Semester.ts         # Academic terms
+│   ├── Holiday.ts          # Calendar management
+│   ├── Class.ts            # Class instances
+│   ├── Student.ts          # Student records
+│   ├── Enrollment.ts       # Class enrollment
+│   ├── ClassMeeting.ts     # Individual class sessions
+│   └── AttendanceRecord.ts # Attendance tracking
+├── keystone.ts             # Main configuration
+├── seed.ts                 # Database seeding
+└── package.json
 ```
 
-## Usage
+## Key Features
 
-### For Administrators
+### Phase A (Current Implementation)
+- **Multi-tenant Architecture**: Complete isolation between school systems
+- **Role-based Access Control**: Super Admin, Admin, Instructor, and TA roles
+- **Course Management**: Create and manage automotive courses
+- **Class Scheduling**: Automatic meeting generation with holiday handling
+- **Student Management**: QR code generation for attendance tracking
+- **Attendance System**: Ready for QR scanner integration
 
-1. Log in to the admin panel
-2. Create your school system and schools
-3. Set up courses and instructors
-4. Create semesters with holidays
-5. Generate classes with meeting schedules
+### User Roles
+- **Super Admin**: Full system access, manages school systems
+- **Admin**: School and course management within their system
+- **Instructor**: Class roster and attendance management
+- **Teaching Assistant**: Attendance tracking only
 
-### For Instructors
+## Database Schema
 
-1. Access your class attendance sheets
-2. Use QR scanner to mark attendance
-3. Manage class rosters (add/drop students)
-4. View attendance history and patterns
+The system uses a hierarchical structure:
+```
+School System → Schools → Courses → Classes → Students (via Enrollments)
+```
 
-### QR Scanner Setup
-
-The system supports any USB/Bluetooth QR scanner that operates in HID (keyboard) mode. Recommended model: [Tera D5100](https://tera-digital.com/products/2d-barcode-scanner-d5100).
+Key relationships:
+- Students have unique QR codes for attendance scanning
+- Classes automatically generate meetings based on schedule
+- Multi-role support (users can be TAs in some classes, students in others)
 
 ## Development
 
+### Available Scripts
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run prisma` - Access Prisma CLI through Keystone
+- `npm run seed` - Seed database with sample data
+
+### GraphQL API
+KeystoneJS automatically generates a GraphQL API available at:
+- **GraphQL Playground**: http://localhost:3030/api/graphql
+- **Admin UI**: http://localhost:3030
+
+### Database Operations
 ```bash
-# Run in development mode
-yarn dev
+# Create and apply migration
+npm run prisma migrate dev
 
-# Run tests
-yarn test
+# Reset database
+npm run prisma migrate reset
 
-# Lint code
-yarn lint
-
-# Build for production
-yarn build
-
-# Start production server
-yarn start
+# View database in Prisma Studio
+npm run prisma studio
 ```
 
-## Documentation
+## Next Steps
 
-- [Product Requirements Document](./docs/torque-ed-prd.md)
-- [Technical Specification](./docs/torque-ed-tech-spec.md)
-- [AI Assistant Guide](./docs/CLAUDE.md)
+### Phase B: Grading System
+- Grade entry and calculation
+- Progress tracking through curriculum
+- Grade spreadsheet generation
 
-## Contributing
+### Phase C: Coursework Tracking
+- Integration with curriculum systems
+- Video submission for lab work
+- MongoDB storage for flexible curriculum data
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Support
+
+For questions or issues, contact Rich Goldman at rich@comfypants.org
 
 ## License
 
-This project is proprietary software. All rights reserved.
-
-## Contact
-
-**Author:** Rich Goldman  
-**Email:** rich@comfypants.org
-
-## Acknowledgments
-
-- Built with [KeystoneJS](https://keystonejs.com/)
-- QR code generation using [qrcode](https://www.npmjs.com/package/qrcode)
-- Date handling with [date-fns](https://date-fns.org/)
+Proprietary - All rights reserved

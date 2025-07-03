@@ -30,7 +30,7 @@ Create `.env` files for each environment:
 ```bash
 # .env.production
 NODE_ENV=production
-PORT=3000
+PORT=3030
 
 # Database
 DATABASE_URL=postgresql://torqueed_user:password@db.example.com:5432/torqueed_prod
@@ -113,7 +113,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "3030:3030"
     environment:
       DATABASE_URL: postgresql://torqueed:localpassword@postgres:5432/torqueed_dev
     volumes:
@@ -173,7 +173,7 @@ RUN yarn install --production --frozen-lockfile && \
 USER nodejs
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3030
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
@@ -233,7 +233,7 @@ aws rds create-db-instance \
       "image": "your-registry.com/torqueed:latest",
       "portMappings": [
         {
-          "containerPort": 3000,
+          "containerPort": 3030,
           "protocol": "tcp"
         }
       ],
@@ -353,7 +353,7 @@ services:
   app:
     image: your-registry.com/torqueed:latest
     ports:
-      - "3000:3000"
+      - "3030:3030"
     environment:
       NODE_ENV: production
     env_file:
@@ -387,7 +387,7 @@ events {
 
 http {
   upstream torqueed {
-    server app:3000;
+    server app:3030;
   }
 
   server {
@@ -466,7 +466,7 @@ const http = require('http');
 
 const options = {
   host: 'localhost',
-  port: 3000,
+  port: 3030,
   path: '/health',
   timeout: 2000
 };
@@ -523,7 +523,7 @@ services:
   grafana:
     image: grafana/grafana
     ports:
-      - "3001:3000"
+      - "3031:3030"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 

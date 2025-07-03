@@ -485,7 +485,7 @@ app.post('/api/webhooks/roster-change', async (req, res) => {
 # .env.example
 DATABASE_URL=postgresql://user:password@host:5432/torque-ed
 SESSION_SECRET=<random-32-char-string>
-PORT=3000
+PORT=3030
 NODE_ENV=production
 AWS_ACCESS_KEY_ID=<aws-key>
 AWS_SECRET_ACCESS_KEY=<aws-secret>
@@ -504,7 +504,7 @@ COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
-EXPOSE 3000
+EXPOSE 3030
 CMD ["yarn", "start"]
 ```
 

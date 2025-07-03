@@ -1,0 +1,1 @@
+export { CustomLogo as Logo } from './components/CustomLogo';
