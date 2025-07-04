@@ -16,15 +16,15 @@ export const SchoolSystem = list({
       },
       create: ({ session }) => {
         // Only super admins can create school systems
-        return session?.data?.roles?.includes('superAdmin');
+        return !!session?.data?.roles?.includes('superAdmin');
       },
       update: ({ session }) => {
         // Only super admins can update school systems
-        return session?.data?.roles?.includes('superAdmin');
+        return !!session?.data?.roles?.includes('superAdmin');
       },
       delete: ({ session }) => {
         // Only super admins can delete school systems
-        return session?.data?.roles?.includes('superAdmin');
+        return !!session?.data?.roles?.includes('superAdmin');
       },
     },
   },
