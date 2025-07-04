@@ -179,29 +179,35 @@ async function main() {
   });
 
   // Create superAdmin users if they don't exist
-  const ryan = existingRyan || await prisma.user.create({
-    data: {
-      email: 'rmonroy@sdccd.edu',
-      password: 'temppass123',
-      firstName: 'Ryan',
-      lastName: 'Monroy',
-      roles: 'superAdmin',
-      schoolSystemId: schoolSystem.id,
-    },
-  });
+  if (!existingRyan) {
+    const ryan = await prisma.user.create({
+      data: {
+        email: 'rmonroy@sdccd.edu',
+        firstName: 'Ryan',
+        lastName: 'Monroy',
+        roles: 'superAdmin',
+        schoolSystemId: schoolSystem.id,
+      },
+    });
+    console.log('✅ Created superAdmin user:', ryan.email, '(password will be set on first login)');
+  }
 
-  const rich = existingRich || await prisma.user.create({
-    data: {
-      email: 'rich@comfypants.org',
-      password: 'temppass123',
-      firstName: 'Rich',
-      lastName: 'Goldman',
-      roles: 'superAdmin',
-      schoolSystemId: schoolSystem.id,
-    },
-  });
+  if (!existingRich) {
+    const rich = await prisma.user.create({
+      data: {
+        email: 'rich@comfypants.org',
+        firstName: 'Rich',
+        lastName: 'Goldman',
+        roles: 'superAdmin',
+        schoolSystemId: schoolSystem.id,
+      },
+    });
+    console.log('✅ Created superAdmin user:', rich.email, '(password will be set on first login)');
+  }
 
-  console.log(existingRyan && existingRich ? '✅ Using existing superAdmin users' : '✅ Created superAdmin users:', ryan.email, rich.email);
+  if (existingRyan && existingRich) {
+    console.log('✅ Using existing superAdmin users');
+  }
 
   console.log('🎉 Seeding completed!');
   console.log('');
