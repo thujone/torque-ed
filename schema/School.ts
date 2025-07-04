@@ -5,7 +5,7 @@ export const School = list({
   access: {
     filter: {
       query: ({ session }) => {
-        if (session?.data?.roles?.includes('superAdmin')) return true;
+        if (session?.data?.roles === 'superAdmin') return true;
         return { schoolSystem: { id: { equals: session?.data?.schoolSystemId } } };
       },
     },
@@ -14,15 +14,15 @@ export const School = list({
         return !!session?.data; // Allow queries for authenticated users
       },
       create: ({ session }) => {
-        return session?.data?.roles?.includes('superAdmin') || 
-               session?.data?.roles?.includes('admin');
+        return session?.data?.roles === 'superAdmin' || 
+               session?.data?.roles === 'admin';
       },
       update: ({ session }) => {
-        return session?.data?.roles?.includes('superAdmin') || 
-               session?.data?.roles?.includes('admin');
+        return session?.data?.roles === 'superAdmin' || 
+               session?.data?.roles === 'admin';
       },
       delete: ({ session }) => {
-        return session?.data?.roles?.includes('superAdmin');
+        return session?.data?.roles === 'superAdmin';
       },
     },
   },

@@ -323,95 +323,332 @@ aws ecs update-service \
 echo "Deployment initiated. Check ECS console for status."
 ```
 
-## DigitalOcean Deployment
+## DigitalOcean Deployment (Ubuntu 24.10)
 
-### Droplet Setup
+### Initial Server Setup
+
 ```bash
-# Initial server setup
-ssh root@your-droplet-ip
+# SSH into your droplet as root
+ssh root@104.131.171.237
 
-# Create user
+# Update system packages
+apt update && apt upgrade -y
+
+# Create a new user with sudo privileges
 adduser torqueed
 usermod -aG sudo torqueed
 
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-usermod -aG docker torqueed
+# Set up SSH key for the new user (from your local machine)
+# First, copy your SSH key to the new user
+ssh-copy-id torqueed@104.131.171.237
 
-# Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+# Configure firewall
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw allow 3030/tcp  # For development/testing
+ufw enable
+
+# Switch to the new user
+su - torqueed
 ```
 
-### Docker Compose Production
-```yaml
-# docker-compose.prod.yml
-version: '3.8'
+### Install Node.js 20.x LTS (via NodeSource)
 
-services:
-  app:
-    image: your-registry.com/torqueed:latest
-    ports:
-      - "3030:3030"
-    environment:
-      NODE_ENV: production
-    env_file:
-      - .env.production
-    restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+```bash
+# Install prerequisites
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
 
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-    depends_on:
-      - app
-    restart: unless-stopped
+# Add NodeSource GPG key
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+# Add NodeSource repository for Node.js 20.x
+NODE_MAJOR=20
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+# Install Node.js
+sudo apt-get update
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version  # Should show v20.x.x
+npm --version
 ```
 
-### Nginx Configuration
+### Install PostgreSQL 16
+
+```bash
+# Install PostgreSQL
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+# Start and enable PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Secure PostgreSQL and create database
+sudo -u postgres psql
+
+# In PostgreSQL prompt:
+CREATE USER torqueed_user WITH PASSWORD 'your-secure-password';
+CREATE DATABASE torqueed_staging OWNER torqueed_user;
+GRANT ALL PRIVILEGES ON DATABASE torqueed_staging TO torqueed_user;
+\q
+
+# Configure PostgreSQL for password authentication
+sudo sed -i '/^local/s/peer/scram-sha-256/' /etc/postgresql/16/main/pg_hba.conf
+sudo systemctl restart postgresql
+```
+
+### Install PM2 Process Manager
+
+```bash
+# Install PM2 globally
+sudo npm install -g pm2
+
+# Set up PM2 to start on boot
+pm2 startup systemd
+# Follow the command output instructions
+```
+
+### Install and Configure Nginx
+
+```bash
+# Install Nginx
+sudo apt update
+sudo apt install -y nginx
+
+# Start and enable Nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### Deploy TorqueEd Application
+
+```bash
+# Clone the repository
+cd /home/torqueed
+git clone https://github.com/your-username/torque-ed.git
+cd torque-ed
+
+# Install dependencies
+npm install
+
+# Create environment file for staging
+nano .env.staging
+```
+
+Add the following to `.env.staging`:
+```bash
+NODE_ENV=production
+PORT=3030
+
+# Database - using local PostgreSQL
+DATABASE_URL=postgresql://torqueed_user:your-secure-password@localhost:5432/torqueed_staging
+
+# Session secret (generate a secure random string)
+SESSION_SECRET=your-minimum-32-character-random-string-change-this
+
+# Application URLs
+FRONTEND_URL=http://104.131.171.237:3030
+BACKEND_URL=http://104.131.171.237:3030
+
+# Email (optional for staging)
+# SMTP_HOST=smtp.sendgrid.net
+# SMTP_PORT=587
+# SMTP_USER=apikey
+# SMTP_PASS=your-sendgrid-api-key
+# EMAIL_FROM=noreply@torqueed-staging.com
+```
+
+```bash
+# Build the application
+npm run build
+
+# Run database migrations
+DATABASE_URL="postgresql://torqueed_user:your-secure-password@localhost:5432/torqueed_staging" npm run keystone prisma migrate deploy
+
+# Create PM2 ecosystem file
+nano ecosystem.config.js
+```
+
+Add the following PM2 configuration:
+```javascript
+module.exports = {
+  apps: [{
+    name: 'torqueed-staging',
+    script: './node_modules/.bin/keystone',
+    args: 'start',
+    instances: 1,
+    exec_mode: 'fork',
+    env_file: './.env.staging',
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_file: './logs/combined.log',
+    time: true,
+    max_memory_restart: '1G',
+    node_args: '--max-old-space-size=1024'
+  }]
+};
+```
+
+```bash
+# Create logs directory
+mkdir -p logs
+
+# Start the application with PM2
+pm2 start ecosystem.config.js
+
+# Save PM2 process list
+pm2 save
+
+# Check application status
+pm2 status
+pm2 logs torqueed-staging
+```
+
+### Configure Nginx as Reverse Proxy
+
+```bash
+# Create Nginx server block
+sudo nano /etc/nginx/sites-available/torqueed
+```
+
+Add the following configuration:
 ```nginx
-# nginx.conf
-events {
-  worker_connections 1024;
-}
-
-http {
-  upstream torqueed {
-    server app:3030;
-  }
-
-  server {
+server {
     listen 80;
-    server_name torqueed.example.com;
-    return 301 https://$server_name$request_uri;
-  }
-
-  server {
-    listen 443 ssl http2;
-    server_name torqueed.example.com;
-
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
+    server_name 104.131.171.237;
 
     location / {
-      proxy_pass http://torqueed;
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://localhost:3030;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
     }
-  }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        proxy_pass http://localhost:3030/health;
+    }
 }
+```
+
+```bash
+# Enable the site
+sudo ln -s /etc/nginx/sites-available/torqueed /etc/nginx/sites-enabled/
+
+# Test Nginx configuration
+sudo nginx -t
+
+# Reload Nginx
+sudo systemctl reload nginx
+```
+
+### Set Up SSL with Let's Encrypt (Optional for Staging)
+
+If you have a domain name pointing to your droplet:
+
+```bash
+# Install Certbot
+sudo apt update
+sudo apt install -y certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+sudo certbot --nginx -d your-staging-domain.com
+
+# Auto-renewal will be set up automatically
+# Test renewal
+sudo certbot renew --dry-run
+```
+
+### Deployment Maintenance
+
+```bash
+# View application logs
+pm2 logs torqueed-staging
+
+# Monitor application
+pm2 monit
+
+# Restart application
+pm2 restart torqueed-staging
+
+# Update application
+cd /home/torqueed/torque-ed
+git pull origin main
+npm install
+npm run build
+pm2 restart torqueed-staging
+
+# View Nginx logs
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+### Staging Environment Checklist
+
+- [ ] Server security hardened (firewall, SSH keys)
+- [ ] Node.js 20.x LTS installed
+- [ ] PostgreSQL 16 installed and configured
+- [ ] Database created with proper user permissions
+- [ ] Application deployed and running with PM2
+- [ ] Nginx configured as reverse proxy
+- [ ] Environment variables properly configured
+- [ ] Application accessible at http://104.131.171.237
+- [ ] PM2 configured to restart on server reboot
+- [ ] Logs being collected properly
+
+### Quick Deployment Script
+
+Create a deployment script for easy updates:
+
+```bash
+#!/bin/bash
+# deploy-staging.sh
+
+set -e
+
+echo "Deploying TorqueEd to staging..."
+
+# Navigate to project directory
+cd /home/torqueed/torque-ed
+
+# Pull latest changes
+git pull origin main
+
+# Install dependencies
+npm install
+
+# Build application
+npm run build
+
+# Run migrations
+DATABASE_URL="postgresql://torqueed_user:your-secure-password@localhost:5432/torqueed_staging" npm run keystone prisma migrate deploy
+
+# Restart PM2
+pm2 restart torqueed-staging
+
+echo "Deployment complete!"
+pm2 status
+```
+
+Make it executable:
+```bash
+chmod +x deploy-staging.sh
 ```
 
 ## Database Management

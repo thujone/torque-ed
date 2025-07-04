@@ -7,14 +7,14 @@ async function main() {
 
   // Check if we have existing data first
   const existingSchoolSystem = await prisma.schoolSystem.findFirst({
-    where: { name: 'Southern California Automotive Institute' },
+    where: { name: 'San Diego Community College District' },
   });
 
   // Create a sample school system if it doesn't exist
   const schoolSystem = existingSchoolSystem || await prisma.schoolSystem.create({
     data: {
-      name: 'Southern California Automotive Institute',
-      subdomain: 'scai',
+      name: 'San Diego Community College District',
+      subdomain: 'sdccd',
       settings: {
         attendanceGracePeriod: 30,
         defaultClassDuration: 90,
@@ -28,7 +28,7 @@ async function main() {
   // Check if school exists
   const existingSchool = await prisma.school.findFirst({
     where: { 
-      name: 'Main Campus',
+      name: 'San Diego Miramar College',
       schoolSystemId: schoolSystem.id
     },
   });
@@ -36,8 +36,8 @@ async function main() {
   // Create a sample school if it doesn't exist
   const school = existingSchool || await prisma.school.create({
     data: {
-      name: 'Main Campus',
-      address: '123 Automotive Way, Los Angeles, CA 90210',
+      name: 'San Diego Miramar College',
+      address: '10440 Black Mountain Road, San Diego, CA 92126',
       schoolSystemId: schoolSystem.id,
     },
   });
