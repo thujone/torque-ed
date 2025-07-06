@@ -108,6 +108,8 @@ export const AttendanceRecord = list({
       ref: 'Enrollment.attendanceRecords',
       ui: {
         displayMode: 'select',
+        linkToItem: false,
+        hideCreate: true,
         // Note: We'll need to create a custom label for this
       },
     }),
@@ -116,6 +118,8 @@ export const AttendanceRecord = list({
       ui: {
         displayMode: 'select',
         labelField: 'scheduledDate',
+        linkToItem: false,
+        hideCreate: true,
       },
     }),
     markedBy: relationship({ 
@@ -123,6 +127,8 @@ export const AttendanceRecord = list({
       ui: {
         displayMode: 'select',
         labelField: 'email',
+        linkToItem: false,
+        hideCreate: true,
       },
     }),
     
@@ -140,9 +146,41 @@ export const AttendanceRecord = list({
     listView: {
       initialColumns: ['enrollment', 'classSession', 'status', 'clockInTime', 'clockOutTime', 'sessionDuration'],
     },
-    description: 'Individual attendance records. For a spreadsheet view, use the Attendance Spreadsheet page in the navigation menu.',
+    description: '✅ Academic Records - Attendance tracking\n\nIndividual attendance records. For a spreadsheet view, use the Attendance Spreadsheet page in the navigation menu.',
   },
   hooks: {
+    validateInput: async ({ resolvedData, context, operation, addValidationError }) => {
+      // Require enrollment and classSession
+      if (!resolvedData.enrollment?.connect?.id) {
+        addValidationError('Enrollment is required');
+      }
+      if (!resolvedData.classSession?.connect?.id) {
+        addValidationError('Class session is required');
+      }
+      
+      // Validate that enrollment and classSession belong to the same class
+      if ((operation === 'create' || operation === 'update') && 
+          resolvedData.enrollment?.connect?.id && resolvedData.classSession?.connect?.id) {
+        
+        const [enrollment, classSession] = await Promise.all([
+          context.query.Enrollment.findOne({
+            where: { id: resolvedData.enrollment.connect.id },
+            query: 'class { id }'
+          }),
+          context.query.ClassSession.findOne({
+            where: { id: resolvedData.classSession.connect.id },
+            query: 'class { id }'
+          })
+        ]);
+        
+        const enrollmentClassId = enrollment?.class?.id;
+        const sessionClassId = classSession?.class?.id;
+        
+        if (enrollmentClassId && sessionClassId && enrollmentClassId !== sessionClassId) {
+          addValidationError('Enrollment and class session must belong to the same class');
+        }
+      }
+    },
     resolveInput: {
       create: ({ resolvedData, context }) => {
         // Set markedBy to current user

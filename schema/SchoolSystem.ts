@@ -55,22 +55,42 @@ export const SchoolSystem = list({
     users: relationship({ 
       ref: 'User.schoolSystem',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     schools: relationship({ 
       ref: 'School.schoolSystem',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     courses: relationship({ 
       ref: 'Course.schoolSystem',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     semesters: relationship({ 
       ref: 'Semester.schoolSystem',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     students: relationship({ 
       ref: 'Student.schoolSystem',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     
     // Timestamps
@@ -88,5 +108,6 @@ export const SchoolSystem = list({
       initialColumns: ['name', 'subdomain', 'createdAt'],
     },
     labelField: 'name',
+    description: '🏛️ Academic Structure - School districts and systems',
   },
 });

@@ -88,10 +88,37 @@ torque-ed/
 │   ├── generate-sessions.js     # Generate sessions for existing classes
 │   ├── remove-sessions.js       # Remove all sessions
 │   └── update-session-dayofweek.js # Backfill dayOfWeek data
-├── keystone.ts                  # Main KeystoneJS config
+├── keystone.ts                  # Main KeystoneJS config with grouped navigation
 ├── package.json
 └── README.md
 ```
+
+## Admin UI Organization
+
+The KeystoneJS admin interface is organized into logical groups for better usability:
+
+### Academic Structure
+- School Systems
+- Schools
+- Courses
+- Semesters
+- Holidays
+
+### Classes & Scheduling
+- Classes
+- Class Sessions
+
+### People
+- Administrators (filtered view of Users with admin/superAdmin roles)
+- Instructors (filtered view of Users with instructor/ta roles)
+- Students
+
+### Academic Records
+- Enrollments
+- Attendance Records
+
+### Worksheets
+- Attendance Sheets (custom spreadsheet view at /attendance)
 
 ## Common Development Tasks
 

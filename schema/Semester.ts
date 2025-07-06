@@ -66,6 +66,17 @@ export const Semester = list({
       ui: {
         displayMode: 'select',
         labelField: 'name',
+        linkToItem: false,
+        hideCreate: true,
+      },
+      hooks: {
+        resolveInput: ({ resolvedData, context, operation }) => {
+          // Auto-populate schoolSystem for non-superAdmin users on create
+          if (operation === 'create' && !resolvedData.schoolSystem && context.session?.data?.schoolSystemId) {
+            return { connect: { id: context.session.data.schoolSystemId } };
+          }
+          return resolvedData.schoolSystem;
+        },
       },
     }),
     holidays: relationship({ 
@@ -74,14 +85,17 @@ export const Semester = list({
       ui: {
         displayMode: 'cards',
         cardFields: ['name', 'date'],
-        linkToItem: true,
-        inlineCreate: { fields: ['name', 'date'] },
-        inlineEdit: { fields: ['name', 'date'] },
+        linkToItem: false,
+        hideCreate: true,
       },
     }),
     classes: relationship({ 
       ref: 'Class.semester',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     
     // Timestamps
@@ -94,10 +108,19 @@ export const Semester = list({
       ui: { createView: { fieldMode: 'hidden' } },
     }),
   },
+  hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require schoolSystem
+      if (!resolvedData.schoolSystem?.connect?.id) {
+        addValidationError('School system is required');
+      }
+    },
+  },
   ui: {
     listView: {
       initialColumns: ['name', 'startDate', 'endDate', 'schoolSystem'],
     },
     labelField: 'name',
+    description: '📅 Academic Structure - Academic terms',
   },
 });

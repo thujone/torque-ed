@@ -34,24 +34,28 @@ School System
    - Can perform any action in the system
    - Typically IT staff or system administrators
    - Limited to 2-3 users per school system
+   - Displayed in "Administrators" section of admin UI
 
 2. **Admin**
    - Manages schools, courses, and semesters
    - Can create instructor accounts
    - Usually department heads
    - Cannot modify super admin accounts
+   - Displayed in "Administrators" section of admin UI
 
 3. **Instructor**
    - Manages their assigned classes
    - Can add/drop students with notification
    - Can cancel individual class meetings
    - Cannot create courses or modify semester dates
+   - Displayed in "Instructors" section of admin UI
 
 4. **Teaching Assistant**
    - Can mark attendance
    - Read-only access to class rosters
    - Cannot modify enrollments
    - Future: Can enter grades under instructor supervision
+   - Displayed in "Instructors" section of admin UI (grouped with instructors for simplicity)
 
 #### Multi-Role Rules
 - Users can have different roles in different contexts
@@ -286,6 +290,32 @@ Waitlisted → Enrolled → Dropped
 - Waitlist lengths
 - Drop rates by class
 - Historical trends by semester
+
+### Worksheets & Utilities
+
+#### Attendance Sheets
+The system provides a custom spreadsheet-style interface for managing attendance:
+
+1. **Access**: Available under "Worksheets" → "Attendance Sheets" in admin navigation
+2. **View**: Located at `/attendance` URL in the admin interface
+3. **Functionality**:
+   - Grid layout showing students vs. class sessions
+   - Three columns per session: Clock In, Clock Out, Duration
+   - Smart QR scanner integration for real-time attendance marking
+   - Export capabilities for external processing
+   - Filtering by class, date range, and attendance status
+
+4. **User Permissions**:
+   - Instructors: Can view and edit attendance for their assigned classes
+   - Teaching Assistants: Can mark attendance for assigned classes
+   - Administrators: Can view all attendance data
+   - Super Admins: Full access to all attendance functions
+
+5. **Data Display**:
+   - Student names sorted alphabetically by last name, first name
+   - Session dates chronologically ordered
+   - Visual indicators for present/absent/excused status
+   - Duration calculations automatically updated
 
 ### Future Phase Considerations
 

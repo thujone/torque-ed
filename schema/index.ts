@@ -15,15 +15,22 @@ import { ClassSession } from './ClassSession';
 import { AttendanceRecord } from './AttendanceRecord';
 
 export const lists: Lists = {
-  User,
+  // Academic Structure
   SchoolSystem,
   School,
   Course,
   Semester,
   Holiday,
+  
+  // Classes & Scheduling
   Class,
-  Student,
-  Enrollment,
   ClassSession,
+  
+  // People
+  User,
+  Student,
+  
+  // Academic Records
+  Enrollment,
   AttendanceRecord,
 };

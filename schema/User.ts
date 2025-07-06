@@ -78,6 +78,17 @@ export const User = list({
       ui: {
         displayMode: 'select',
         labelField: 'name',
+        linkToItem: false,
+        hideCreate: true,
+      },
+      hooks: {
+        resolveInput: ({ resolvedData, context, operation }) => {
+          // Auto-populate schoolSystem for non-superAdmin users on create
+          if (operation === 'create' && !resolvedData.schoolSystem && context.session?.data?.schoolSystemId) {
+            return { connect: { id: context.session.data.schoolSystemId } };
+          }
+          return resolvedData.schoolSystem;
+        },
       },
     }),
     schools: relationship({ 
@@ -86,18 +97,31 @@ export const User = list({
       ui: {
         displayMode: 'cards',
         cardFields: ['name'],
-        inlineEdit: { fields: ['name'] },
-        linkToItem: true,
-        inlineCreate: { fields: ['name', 'address'] },
+        linkToItem: false,
+        hideCreate: true,
+        createView: { fieldMode: 'hidden' },
+        itemView: { fieldMode: 'hidden' },
       },
     }),
     instructorClasses: relationship({ 
       ref: 'Class.instructor',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+        createView: { fieldMode: 'hidden' },
+        itemView: { fieldMode: 'hidden' },
+      },
     }),
     taClasses: relationship({ 
       ref: 'Class.teachingAssistants',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+        createView: { fieldMode: 'hidden' },
+        itemView: { fieldMode: 'hidden' },
+      },
     }),
     
     // Timestamps
@@ -110,10 +134,22 @@ export const User = list({
       ui: { createView: { fieldMode: 'hidden' } },
     }),
   },
+  hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require schoolSystem for non-superAdmin users
+      if (!resolvedData.schoolSystem?.connect?.id && resolvedData.roles !== 'superAdmin') {
+        addValidationError('School system is required');
+      }
+    },
+  },
   ui: {
     listView: {
       initialColumns: ['firstName', 'lastName', 'email', 'roles', 'schoolSystem'],
     },
     labelField: 'email',
+    description: '👥 People - Faculty and staff (admins, instructors, TAs)',
+    label: 'Faculty and Staff',
+    singular: 'Faculty/Staff Member',
+    plural: 'Faculty and Staff',
   },
 });

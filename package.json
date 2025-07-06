@@ -12,12 +12,16 @@
     "seed": "tsx seed.ts",
     "generate-sessions": "node scripts/generate-sessions.js",
     "remove-sessions": "node scripts/remove-sessions.js",
-    "update-dayofweek": "node scripts/update-session-dayofweek.js"
+    "update-dayofweek": "node scripts/update-session-dayofweek.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@graphql-tools/schema": "^10.0.23",
     "@keystone-6/auth": "^8.1.0",
     "@keystone-6/core": "^6.3.1",
     "@types/qrcode": "^1.5.5",
+    "csv-parse": "^5.6.0",
+    "graphql-tag": "^2.12.6",
     "qrcode": "^1.5.3",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",

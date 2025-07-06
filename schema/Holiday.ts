@@ -44,6 +44,8 @@ export const Holiday = list({
       ui: {
         displayMode: 'select',
         labelField: 'name',
+        linkToItem: false,
+        hideCreate: true,
       },
     }),
     
@@ -57,10 +59,19 @@ export const Holiday = list({
       ui: { createView: { fieldMode: 'hidden' } },
     }),
   },
+  hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require semester
+      if (!resolvedData.semester?.connect?.id) {
+        addValidationError('Semester is required');
+      }
+    },
+  },
   ui: {
     listView: {
       initialColumns: ['name', 'date', 'semester'],
     },
     labelField: 'name',
+    description: '🎄 Academic Structure - Holidays and breaks',
   },
 });

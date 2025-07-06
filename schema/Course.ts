@@ -55,11 +55,28 @@ export const Course = list({
       ui: {
         displayMode: 'select',
         labelField: 'name',
+        linkToItem: false,
+        hideCreate: true,
+      },
+      hooks: {
+        resolveInput: ({ resolvedData, context, operation }) => {
+          // Auto-populate schoolSystem for non-superAdmin users on create
+          if (operation === 'create' && !resolvedData.schoolSystem && context.session?.data?.schoolSystemId) {
+            return { connect: { id: context.session.data.schoolSystemId } };
+          }
+          return resolvedData.schoolSystem;
+        },
       },
     }),
     classes: relationship({ 
       ref: 'Class.course',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+        createView: { fieldMode: 'hidden' },
+        itemView: { fieldMode: 'hidden' },
+      },
     }),
     
     // Timestamps
@@ -72,10 +89,19 @@ export const Course = list({
       ui: { createView: { fieldMode: 'hidden' } },
     }),
   },
+  hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require schoolSystem
+      if (!resolvedData.schoolSystem?.connect?.id) {
+        addValidationError('School system is required');
+      }
+    },
+  },
   ui: {
     listView: {
       initialColumns: ['code', 'name', 'schoolSystem'],
     },
     labelField: 'code',
+    description: '📚 Academic Structure - Course catalog',
   },
 });

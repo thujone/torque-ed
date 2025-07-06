@@ -11,25 +11,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id                             String             @id @default(cuid())
-  email                          String             @unique @default("")
-  password                       String
-  firstName                      String             @default("")
-  lastName                       String             @default("")
-  roles                          UserRoleType?      @default(instructor)
-  schoolSystem                   SchoolSystem?      @relation("User_schoolSystem", fields: [schoolSystemId], references: [id])
-  schoolSystemId                 String?            @map("schoolSystem")
-  schools                        School[]           @relation("School_administrators")
-  instructorClasses              Class[]            @relation("Class_instructor")
-  taClasses                      Class[]            @relation("Class_teachingAssistants")
-  createdAt                      DateTime?          @default(now())
-  updatedAt                      DateTime?          @updatedAt
-  from_AttendanceRecord_markedBy AttendanceRecord[] @relation("AttendanceRecord_markedBy")
-
-  @@index([schoolSystemId])
-}
-
 model SchoolSystem {
   id        String     @id @default(cuid())
   name      String     @unique @default("")
@@ -45,15 +26,16 @@ model SchoolSystem {
 }
 
 model School {
-  id             String        @id @default(cuid())
-  name           String        @default("")
-  address        String        @default("")
-  schoolSystem   SchoolSystem? @relation("School_schoolSystem", fields: [schoolSystemId], references: [id])
-  schoolSystemId String?       @map("schoolSystem")
-  administrators User[]        @relation("School_administrators")
-  classes        Class[]       @relation("Class_school")
-  createdAt      DateTime?     @default(now())
-  updatedAt      DateTime?     @updatedAt
+  id                  String        @id @default(cuid())
+  name                String        @default("")
+  address             String        @default("")
+  schoolSystem        SchoolSystem? @relation("School_schoolSystem", fields: [schoolSystemId], references: [id])
+  schoolSystemId      String?       @map("schoolSystem")
+  administrators      User[]        @relation("School_administrators")
+  classes             Class[]       @relation("Class_school")
+  createdAt           DateTime?     @default(now())
+  updatedAt           DateTime?     @updatedAt
+  from_Student_school Student[]     @relation("Student_school")
 
   @@index([schoolSystemId])
 }
@@ -131,40 +113,6 @@ model Class {
   @@index([instructorId])
 }
 
-model Student {
-  id             String        @id @default(cuid())
-  studentId      String        @unique @default("")
-  firstName      String        @default("")
-  lastName       String        @default("")
-  email          String        @default("")
-  qrCode         String        @unique @default("")
-  schoolSystem   SchoolSystem? @relation("Student_schoolSystem", fields: [schoolSystemId], references: [id])
-  schoolSystemId String?       @map("schoolSystem")
-  enrollments    Enrollment[]  @relation("Enrollment_student")
-  createdAt      DateTime?     @default(now())
-  updatedAt      DateTime?     @updatedAt
-
-  @@index([schoolSystemId])
-}
-
-model Enrollment {
-  id                String               @id @default(cuid())
-  status            EnrollmentStatusType @default(enrolled)
-  waitlistPosition  Int?
-  enrolledAt        DateTime?
-  droppedAt         DateTime?
-  student           Student?             @relation("Enrollment_student", fields: [studentId], references: [id])
-  studentId         String?              @map("student")
-  class             Class?               @relation("Enrollment_class", fields: [classId], references: [id])
-  classId           String?              @map("class")
-  attendanceRecords AttendanceRecord[]   @relation("AttendanceRecord_enrollment")
-  createdAt         DateTime?            @default(now())
-  updatedAt         DateTime?            @updatedAt
-
-  @@index([studentId])
-  @@index([classId])
-}
-
 model ClassSession {
   id                 String                      @id @default(cuid())
   scheduledDate      DateTime                    @postgresql.Date
@@ -184,6 +132,62 @@ model ClassSession {
   createdAt          DateTime?                   @default(now())
   updatedAt          DateTime?                   @updatedAt
 
+  @@index([classId])
+}
+
+model User {
+  id                             String             @id @default(cuid())
+  email                          String             @unique @default("")
+  password                       String
+  firstName                      String             @default("")
+  lastName                       String             @default("")
+  roles                          UserRoleType?      @default(instructor)
+  schoolSystem                   SchoolSystem?      @relation("User_schoolSystem", fields: [schoolSystemId], references: [id])
+  schoolSystemId                 String?            @map("schoolSystem")
+  schools                        School[]           @relation("School_administrators")
+  instructorClasses              Class[]            @relation("Class_instructor")
+  taClasses                      Class[]            @relation("Class_teachingAssistants")
+  createdAt                      DateTime?          @default(now())
+  updatedAt                      DateTime?          @updatedAt
+  from_AttendanceRecord_markedBy AttendanceRecord[] @relation("AttendanceRecord_markedBy")
+
+  @@index([schoolSystemId])
+}
+
+model Student {
+  id             String        @id @default(cuid())
+  studentId      String        @unique @default("")
+  firstName      String        @default("")
+  lastName       String        @default("")
+  email          String        @default("")
+  qrCode         String        @unique @default("")
+  schoolSystem   SchoolSystem? @relation("Student_schoolSystem", fields: [schoolSystemId], references: [id])
+  schoolSystemId String?       @map("schoolSystem")
+  school         School?       @relation("Student_school", fields: [schoolId], references: [id])
+  schoolId       String?       @map("school")
+  enrollments    Enrollment[]  @relation("Enrollment_student")
+  createdAt      DateTime?     @default(now())
+  updatedAt      DateTime?     @updatedAt
+
+  @@index([schoolSystemId])
+  @@index([schoolId])
+}
+
+model Enrollment {
+  id                String               @id @default(cuid())
+  student           Student?             @relation("Enrollment_student", fields: [studentId], references: [id])
+  studentId         String?              @map("student")
+  class             Class?               @relation("Enrollment_class", fields: [classId], references: [id])
+  classId           String?              @map("class")
+  status            EnrollmentStatusType @default(enrolled)
+  waitlistPosition  Int?
+  enrolledAt        DateTime?
+  droppedAt         DateTime?
+  attendanceRecords AttendanceRecord[]   @relation("AttendanceRecord_enrollment")
+  createdAt         DateTime?            @default(now())
+  updatedAt         DateTime?            @updatedAt
+
+  @@index([studentId])
   @@index([classId])
 }
 
@@ -209,19 +213,6 @@ model AttendanceRecord {
   @@index([markedById])
 }
 
-enum UserRoleType {
-  superAdmin
-  admin
-  instructor
-  ta
-}
-
-enum EnrollmentStatusType {
-  enrolled
-  waitlisted
-  dropped
-}
-
 enum ClassSessionSessionTypeType {
   regular
   midterm
@@ -233,6 +224,19 @@ enum ClassSessionStatusType {
   scheduled
   completed
   cancelled
+}
+
+enum UserRoleType {
+  superAdmin
+  admin
+  instructor
+  ta
+}
+
+enum EnrollmentStatusType {
+  enrolled
+  waitlisted
+  dropped
 }
 
 enum AttendanceRecordStatusType {

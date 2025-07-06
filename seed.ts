@@ -134,14 +134,14 @@ async function main() {
   // Check for existing courses
   const existingCourse1 = await prisma.course.findFirst({
     where: { 
-      code: 'AUTO-101',
+      code: 'AUTO186',
       schoolSystemId: schoolSystem.id
     },
   });
 
   const existingCourse2 = await prisma.course.findFirst({
     where: { 
-      code: 'AUTO-302',
+      code: 'AUTO270',
       schoolSystemId: schoolSystem.id
     },
   });
@@ -149,7 +149,7 @@ async function main() {
   // Create sample courses if they don't exist
   const course1 = existingCourse1 || await prisma.course.create({
     data: {
-      code: 'AUTO-101',
+      code: 'AUTO186',
       name: 'Introduction to Automotive Technology',
       description: 'Fundamentals of automotive systems and basic repair techniques.',
       prerequisites: 'None',
@@ -159,10 +159,10 @@ async function main() {
 
   const course2 = existingCourse2 || await prisma.course.create({
     data: {
-      code: 'AUTO-302',
+      code: 'AUTO270',
       name: 'Transmission Repair',
       description: 'Advanced transmission diagnosis and repair procedures.',
-      prerequisites: 'AUTO-101, AUTO-201',
+      prerequisites: 'AUTO186',
       schoolSystemId: schoolSystem.id,
     },
   });

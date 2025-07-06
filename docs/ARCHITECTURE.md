@@ -301,6 +301,33 @@ torque-ed/
 └── api/                   # Custom REST endpoints
 ```
 
+#### Admin UI Organization
+
+The KeystoneJS admin interface is organized into logical groups:
+
+**Academic Structure**
+- School Systems
+- Schools
+- Courses
+- Semesters
+- Holidays
+
+**Classes & Scheduling**
+- Classes
+- Class Sessions
+
+**People**
+- Administrators (filtered view of Users with admin/superAdmin roles)
+- Instructors (filtered view of Users with instructor/ta roles)
+- Students
+
+**Academic Records**
+- Enrollments
+- Attendance Records
+
+**Worksheets**
+- Attendance Sheets (custom spreadsheet view at /attendance)
+
 #### Testing Patterns
 - Unit tests for business logic
 - Integration tests for GraphQL API

@@ -38,6 +38,17 @@ export const School = list({
       ui: {
         displayMode: 'select',
         labelField: 'name',
+        linkToItem: false,
+        hideCreate: true,
+      },
+      hooks: {
+        resolveInput: ({ resolvedData, context, operation }) => {
+          // Auto-populate schoolSystem for non-superAdmin users on create
+          if (operation === 'create' && !resolvedData.schoolSystem && context.session?.data?.schoolSystemId) {
+            return { connect: { id: context.session.data.schoolSystemId } };
+          }
+          return resolvedData.schoolSystem;
+        },
       },
     }),
     administrators: relationship({ 
@@ -46,12 +57,19 @@ export const School = list({
       ui: {
         displayMode: 'cards',
         cardFields: ['firstName', 'lastName', 'email'],
-        linkToItem: true,
+        linkToItem: false,
+        hideCreate: true,
+        itemView: { fieldMode: 'hidden' },
       },
     }),
     classes: relationship({ 
       ref: 'Class.school',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+        itemView: { fieldMode: 'hidden' },
+      },
     }),
     
     // Timestamps
@@ -64,10 +82,19 @@ export const School = list({
       ui: { createView: { fieldMode: 'hidden' } },
     }),
   },
+  hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require schoolSystem
+      if (!resolvedData.schoolSystem?.connect?.id) {
+        addValidationError('School system is required');
+      }
+    },
+  },
   ui: {
     listView: {
       initialColumns: ['name', 'schoolSystem', 'address'],
     },
     labelField: 'name',
+    description: '🏫 Academic Structure - Individual schools',
   },
 });

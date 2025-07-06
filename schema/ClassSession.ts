@@ -1,5 +1,5 @@
 import { list } from '@keystone-6/core';
-import { relationship, timestamp, select, text, checkbox, calendarDay, virtual } from '@keystone-6/core/fields';
+import { relationship, timestamp, select, text, checkbox, calendarDay } from '@keystone-6/core/fields';
 
 export const ClassSession = list({
   access: {
@@ -130,11 +130,16 @@ export const ClassSession = list({
       ui: {
         displayMode: 'select',
         labelField: 'section',
+        hideCreate: true,
       },
     }),
     attendanceRecords: relationship({ 
       ref: 'AttendanceRecord.classSession',
       many: true,
+      ui: {
+        linkToItem: false,
+        hideCreate: true,
+      },
     }),
     
     // Timestamps
@@ -152,8 +157,17 @@ export const ClassSession = list({
       initialColumns: ['courseNumber', 'class', 'scheduledDate', 'dayOfWeek', 'sessionType', 'scheduledStartTime', 'status'],
     },
     labelField: 'scheduledDate',
+    description: '⏰ Classes & Scheduling - Individual class meetings (Generated automatically)',
+    hideCreate: true,
+    hideDelete: true,
   },
   hooks: {
+    validateInput: async ({ resolvedData, addValidationError }) => {
+      // Require class
+      if (!resolvedData.class?.connect?.id) {
+        addValidationError('Class is required');
+      }
+    },
     resolveInput: {
       create: async ({ resolvedData, context }) => {
         // Auto-populate day of week when creating
@@ -188,7 +202,7 @@ export const ClassSession = list({
         if (resolvedData.scheduledStartTime) {
           // Get the class to find the normal session duration
           const classData = await context.query.Class.findOne({
-            where: { id: item.classId },
+            where: { id: String(item.classId) },
             query: 'schedule'
           });
           
